@@ -83,7 +83,7 @@
       background: radial-gradient(70% 60% at 50% 100%, rgba(194,2,31,.55), transparent 70%), #0b0b0b;
       border: 1px solid var(--line); display: grid; place-items: center;
     }
-    .portrait img { width: 100%; height: 100%; object-fit: cover; }
+    .portrait img { width: 100%; height: 100%; object-fit: contain; object-position: center bottom; }
     .portrait .ph { text-align: center; color: var(--dim); font-size: 14px; }
     .portrait .ph b { display: block; font-size: 72px; color: #fff; font-weight: 800; letter-spacing: -0.04em; line-height: 1; margin-bottom: 10px; }
     .hero h1 { font-weight: 800; font-size: clamp(44px, 7vw, 88px); line-height: .98; letter-spacing: -0.03em; }
@@ -114,7 +114,7 @@
     }
     .project:hover { transform: translateY(-4px); border-color: rgba(194,2,31,.6); }
     .project .thumb {
-      aspect-ratio: 4 / 3; border-radius: 14px; overflow: hidden; position: relative;
+      aspect-ratio: 3 / 2; border-radius: 14px; overflow: hidden; position: relative;
       background: radial-gradient(80% 70% at 30% 30%, rgba(194,2,31,.35), transparent 60%), #141414;
       border: 1px solid rgba(255,255,255,.08); display: grid; place-items: center;
     }
@@ -226,17 +226,14 @@
       <svg class="wave"><use href="#wave"/></svg>
       <div class="wrap hero-inner">
         <div class="portrait reveal">
-          <!-- ✏️ To add your photo: upload it as "images/me.png" and replace the <div class="ph">…</div> below with:
-               <img src="images/me.png" alt="Aditya"> -->
-          <div class="ph"><b>AD</b>Your photo here</div>
+          <img src="https://framerusercontent.com/images/vXUcKtGFkXl8DiU4BoQjWHASd8Q.png?scale-down-to=1024" alt="Portrait of Aditya">
         </div>
         <div class="reveal">
           <h1>UI/UX<br><span class="soft">&amp; Graphics</span><br><span class="red">DESIGNER</span></h1>
           <p>Transforming ideas into immersive visuals, meaningful brand experiences, and intuitive digital interfaces through communication design, graphic design, and UI/UX thinking.</p>
           <div class="actions">
-            <!-- ✏️ Upload your resume as "resume.pdf" and this button will work -->
-            <a href="resume.pdf" class="pill" target="_blank" rel="noopener">View Resume ↗</a>
-            <a href="#work" class="pill ghost">See my work</a>
+            <a href="#work" class="pill">See my work ↓</a>
+            <a href="#contact" class="pill ghost">Contact me</a>
           </div>
         </div>
       </div>
@@ -270,80 +267,97 @@
         <!--
           ✏️ EDIT YOUR PROJECTS HERE — copy one <article> block per project.
           • Title, category and description: change the text.
-          • Image: upload into an "images" folder, then replace <div class="ph">…</div>
-            with <img src="images/your-file.jpg" alt="Project name">
-          • Button link: change href="#" to your Behance / PDF / case study link.
+          • Image: images currently load from your old Framer site. To host them here instead,
+            upload them into an "images" folder and change src="…" to "images/your-file.jpg".
+          • To add a link button later, put this after the <p>…</p>:
+            <a href="YOUR-LINK" class="pill" target="_blank" rel="noopener">EXPLORE WORK</a>
         -->
         <div class="projects">
           <article class="project glow reveal">
             <svg class="wave"><use href="#wave"/></svg>
-            <div class="thumb"><div class="ph">Project image</div></div>
+            <div class="thumb"><img src="https://framerusercontent.com/images/ve9cZDu3uMuTgKYnJTmfENSvs.jpg?scale-down-to=1024" alt="Amphi Transport — emergency medical services concept" loading="lazy"></div>
             <div class="body">
               <span class="tag">Project 1</span>
-              <div class="cat">UI / UX Design</div>
-              <h3>Project Title</h3>
-              <p>A short one or two line description of the project — the brief, your role and the outcome.</p>
-              <a href="#" class="pill">EXPLORE WORK</a>
+              <div class="cat">UX Research</div>
+              <h3>Emergency Care Orbit Research</h3>
+              <p>A research-driven exploration focused on emergency healthcare systems, identifying gaps, challenges, and innovative approaches to improve critical care accessibility and response.</p>
             </div>
           </article>
 
           <article class="project glow reveal">
             <svg class="wave"><use href="#wave"/></svg>
-            <div class="thumb"><div class="ph">Project image</div></div>
+            <div class="thumb"><img src="https://framerusercontent.com/images/RQZIii9zSpBAYtRGQGqEsXyHBU.jpg?scale-down-to=1024" alt="Kali brand identity — wax seal logo" loading="lazy"></div>
             <div class="body">
               <span class="tag">Project 2</span>
               <div class="cat">Brand Identity</div>
-              <h3>Project Title</h3>
-              <p>A short one or two line description of the project — the brief, your role and the outcome.</p>
-              <a href="#" class="pill">EXPLORE WORK</a>
+              <h3>Kali Sustainable Brand Logo</h3>
+              <p>A self-initiated branding concept developed to explore logo creation, visual storytelling, and identity design through an imagined brand narrative.</p>
             </div>
           </article>
 
           <article class="project glow reveal">
             <svg class="wave"><use href="#wave"/></svg>
-            <div class="thumb"><div class="ph">Project image</div></div>
+            <div class="thumb"><img src="https://framerusercontent.com/images/UGtuRsMTxd9antlOxtphQH2Gk.jpg?scale-down-to=1024" alt="Gollabhama craft documentation — embroidered textile" loading="lazy"></div>
             <div class="body">
               <span class="tag">Project 3</span>
               <div class="cat">Research &amp; Documentation</div>
-              <h3>Project Title</h3>
-              <p>A short one or two line description of the project — the brief, your role and the outcome.</p>
-              <a href="#" class="pill">EXPLORE WORK</a>
+              <h3>Gollabhama Craft Documentation</h3>
+              <p>A research documentation project exploring the cultural roots, craftsmanship, and visual storytelling behind the traditional Gollabhama craft.</p>
             </div>
           </article>
 
           <article class="project glow reveal">
             <svg class="wave"><use href="#wave"/></svg>
-            <div class="thumb"><div class="ph">Project image</div></div>
+            <div class="thumb"><img src="https://framerusercontent.com/images/9dyBOnRN5bolwm2HyqaBD8RRg.jpg?scale-down-to=1024" alt="Gollabhama brand identity — tags and merchandise" loading="lazy"></div>
             <div class="body">
               <span class="tag">Project 4</span>
-              <div class="cat">Graphic Design</div>
-              <h3>Project Title</h3>
-              <p>A short one or two line description of the project — the brief, your role and the outcome.</p>
-              <a href="#" class="pill">EXPLORE WORK</a>
+              <div class="cat">Brand Identity</div>
+              <h3>Gollabhama Brand Identity</h3>
+              <p>A craft-inspired branding project exploring visual identity development and merchandise design through culturally rooted storytelling and graphic applications.</p>
             </div>
           </article>
 
           <article class="project glow reveal">
             <svg class="wave"><use href="#wave"/></svg>
-            <div class="thumb"><div class="ph">Project image</div></div>
+            <div class="thumb"><img src="https://framerusercontent.com/images/NBXgTNUiEUX34EtC7r5nCGtz8.jpg?scale-down-to=1024" alt="Qutub Shahi Tombs website design" loading="lazy"></div>
             <div class="body">
               <span class="tag">Project 5</span>
-              <div class="cat">Web Design</div>
-              <h3>Project Title</h3>
-              <p>A short one or two line description of the project — the brief, your role and the outcome.</p>
-              <a href="#" class="pill">EXPLORE WORK</a>
+              <div class="cat">Website · UI / UX</div>
+              <h3>Qutub Shahi Tombs — Website</h3>
+              <p>A heritage-focused website concept designed to enhance cultural exploration through immersive storytelling, intuitive navigation, and engaging visual experiences.</p>
             </div>
           </article>
 
           <article class="project glow reveal">
             <svg class="wave"><use href="#wave"/></svg>
-            <div class="thumb"><div class="ph">Project image</div></div>
+            <div class="thumb"><img src="https://framerusercontent.com/images/ATyzKTVMqDpGC4E91gDuabmqLnI.jpg?scale-down-to=1024" alt="ECO emergency healthcare app design" loading="lazy"></div>
             <div class="body">
               <span class="tag">Project 6</span>
+              <div class="cat">App · UI / UX</div>
+              <h3>ECO — App Design</h3>
+              <p>A mobile healthcare app concept designed to simplify emergency assistance, improve accessibility, and create a seamless experience during critical situations.</p>
+            </div>
+          </article>
+
+          <article class="project glow reveal">
+            <svg class="wave"><use href="#wave"/></svg>
+            <div class="thumb"><img src="https://framerusercontent.com/images/uCrKBy9uzJMdbXnwgO8Y2P8HaVg.jpg?scale-down-to=1024" alt="Bacca Bucci conceptual advertising posters" loading="lazy"></div>
+            <div class="body">
+              <span class="tag">Project 7</span>
+              <div class="cat">Graphic Design</div>
+              <h3>Bacca Bucci Creative Posters</h3>
+              <p>A creative poster series developed for Bacca Bucci’s Tom &amp; Jerry collection, blending playful visuals, nostalgia, and bold graphic storytelling.</p>
+            </div>
+          </article>
+
+          <article class="project glow reveal">
+            <svg class="wave"><use href="#wave"/></svg>
+            <div class="thumb"><img src="https://framerusercontent.com/images/u5DxxFPvsb5nJpo1pICuwM0xYOY.jpg?scale-down-to=1024" alt="Creative skincare communication carousel" loading="lazy"></div>
+            <div class="body">
+              <span class="tag">Project 8</span>
               <div class="cat">Communication Design</div>
-              <h3>Project Title</h3>
-              <p>A short one or two line description of the project — the brief, your role and the outcome.</p>
-              <a href="#" class="pill">EXPLORE WORK</a>
+              <h3>Creative Skincare Communication</h3>
+              <p>A visually driven content series combining science, design, and digital storytelling for better skincare awareness.</p>
             </div>
           </article>
         </div>
@@ -381,16 +395,11 @@
             <div class="label">Contact form</div>
             <h2>Contact For<br>Work</h2>
             <div class="big">Let's<br>work<br><span>together</span></div>
-            <div class="socials">
-              <!-- ✏️ EDIT: put your real profile links here -->
-              <a href="https://www.linkedin.com/" target="_blank" rel="noopener">LinkedIn ↗</a>
-              <a href="https://www.behance.net/" target="_blank" rel="noopener">Behance ↗</a>
-              <a href="https://www.instagram.com/" target="_blank" rel="noopener">Instagram ↗</a>
-            </div>
+            <!-- ✏️ Social links go here later, e.g.:
+                 <div class="socials"><a href="https://www.linkedin.com/in/your-name" target="_blank" rel="noopener">LinkedIn ↗</a></div> -->
           </div>
-          <!-- ✏️ EDIT: replace hello@example.com in the line below with your email.
-               The form opens the visitor's email app with their message filled in. -->
-          <form id="contact-form" data-email="hello@example.com">
+          <!-- The form opens the visitor's email app with their message filled in, addressed to the email below. -->
+          <form id="contact-form" data-email="aditya2023dhruv@gmail.com">
             <label>Name<input name="name" required placeholder="Your name"></label>
             <label>Email<input name="email" type="email" required placeholder="you@email.com"></label>
             <label>Message<textarea name="message" required placeholder="Tell me about your project"></textarea></label>
