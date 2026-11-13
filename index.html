@@ -608,9 +608,12 @@
         status('Loading project…');
         try {
           const pdfjs = await loadLib();
-          const task = pdfjs.getDocument(url);
-          task.onProgress = p => { if (p.total && my === session) status('Loading project… ' + Math.round(p.loaded / p.total * 100) + '%'); };
+          // download the file in one go (much faster than many small range requests)
+          const task = pdfjs.getDocument({ url, disableRange: true, disableStream: true, disableAutoFetch: true });
+          let ready = false;
+          task.onProgress = p => { if (!ready && p.total && my === session) status('Loading project… ' + Math.round(p.loaded / p.total * 100) + '%'); };
           doc = await task.promise;
+          ready = true;
           if (my !== session) return;
           body.innerHTML = '';
           observer = new IntersectionObserver(entries => entries.forEach(e => {
