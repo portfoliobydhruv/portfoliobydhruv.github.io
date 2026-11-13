@@ -3,267 +3,399 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- ✏️ EDIT: your name -->
-  <title>Your Name — Designer</title>
-  <meta name="description" content="Portfolio of Your Name, graphic and UI/UX designer.">
+  <title>Aditya — UI/UX &amp; Graphics Designer</title>
+  <meta name="description" content="Portfolio of Aditya, a Fashion Communication student at NIFT Hyderabad working across UI/UX, graphic and communication design.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #fafaf8;
-      --ink: #141414;
-      --muted: #6b6b66;
-      --line: #e4e3de;
-      --card: #efeee9;
-      --accent: #ff5a36;
-      --max: 1200px;
+      --bg: #000;
+      --ink: #fff;
+      --muted: #a3a3a3;
+      --dim: #6b6b6b;
+      --line: rgba(255,255,255,.14);
+      --card: #0a0a0a;
+      --red: #c2021f;
+      --red-deep: #a80000;
+      --max: 1100px;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
     body {
       background: var(--bg); color: var(--ink);
-      font-family: "Inter", system-ui, sans-serif; font-size: 17px; line-height: 1.6;
-      -webkit-font-smoothing: antialiased;
+      font-family: "Figtree", "Inter", system-ui, sans-serif; font-size: 16px; line-height: 1.6;
+      -webkit-font-smoothing: antialiased; overflow-x: hidden;
     }
     a { color: inherit; text-decoration: none; }
     img { max-width: 100%; display: block; }
     .wrap { max-width: var(--max); margin: 0 auto; padding: 0 24px; }
 
+    /* Shared bits */
+    .pill {
+      display: inline-flex; align-items: center; gap: 8px; padding: 10px 22px; border-radius: 999px;
+      background: #fff; color: #000; font-weight: 600; font-size: 14px; border: none; cursor: pointer;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .pill:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(194,2,31,.45); }
+    .pill.ghost { background: rgba(255,255,255,.08); color: #fff; border: 1px solid var(--line); }
+    .label { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+    .tag {
+      font-size: 11px; letter-spacing: .1em; text-transform: uppercase; font-weight: 700;
+      padding: 5px 12px; border-radius: 999px; background: linear-gradient(#e6e6e6, #bdbdbd); color: #111;
+    }
+    h2.title {
+      font-weight: 600; font-size: clamp(32px, 5vw, 56px); line-height: 1.12; letter-spacing: -0.02em; text-align: center;
+    }
+    .sub { color: var(--muted); text-align: center; max-width: 520px; margin: 18px auto 0; }
+    section { padding: 110px 0; position: relative; }
+
+    /* Red wave glow — reusable background */
+    .glow { position: relative; overflow: hidden; isolation: isolate; }
+    .glow::before {
+      content: ""; position: absolute; inset: -40%; z-index: -1;
+      background:
+        radial-gradient(40% 30% at 85% 60%, rgba(194,2,31,.55), transparent 70%),
+        radial-gradient(30% 20% at 70% 85%, rgba(168,0,0,.45), transparent 70%);
+      filter: blur(20px);
+    }
+    .wave { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; opacity: .9; pointer-events: none; }
+    .hero .wave { top: auto; bottom: 0; height: 32%; opacity: .75; }
+    .project .wave { top: auto; bottom: -6%; left: 30%; width: 70%; height: 34%; opacity: .55; }
+
     /* Nav */
     header {
-      position: sticky; top: 0; z-index: 10;
-      background: color-mix(in srgb, var(--bg) 88%, transparent);
-      backdrop-filter: blur(10px); border-bottom: 1px solid var(--line);
+      position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 50;
+      width: min(var(--max), calc(100% - 32px));
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 10px 10px 22px; border-radius: 999px;
+      background: rgba(10,10,10,.65); border: 1px solid var(--line); backdrop-filter: blur(14px);
     }
-    nav { display: flex; justify-content: space-between; align-items: center; height: 64px; }
-    .logo { font-weight: 600; letter-spacing: -0.01em; }
-    .logo span { color: var(--accent); }
-    nav ul { display: flex; gap: 28px; list-style: none; font-size: 15px; }
-    nav ul a { color: var(--muted); transition: color .2s; }
-    nav ul a:hover { color: var(--ink); }
+    header .hey { font-weight: 500; font-size: 15px; }
+    header nav { display: flex; align-items: center; gap: 26px; font-size: 14px; color: var(--muted); }
+    header nav a:not(.pill):hover { color: #fff; }
 
     /* Hero */
-    .hero { padding: 120px 0 96px; }
-    .eyebrow { font-size: 14px; color: var(--muted); display: flex; align-items: center; gap: 10px; margin-bottom: 28px; }
-    .dot { width: 8px; height: 8px; border-radius: 50%; background: #2bb673; box-shadow: 0 0 0 4px #2bb67322; }
-    h1 {
-      font-family: "Instrument Serif", serif; font-weight: 400;
-      font-size: clamp(44px, 8vw, 104px); line-height: 1.02; letter-spacing: -0.02em; max-width: 14ch;
+    .hero { min-height: 100vh; display: grid; place-items: center; padding: 140px 0 80px; }
+    .hero-inner { display: grid; grid-template-columns: 1fr 1.1fr; gap: 56px; align-items: center; }
+    .portrait {
+      aspect-ratio: 1 / 1.05; border-radius: 28px; position: relative; overflow: hidden;
+      background: radial-gradient(70% 60% at 50% 100%, rgba(194,2,31,.55), transparent 70%), #0b0b0b;
+      border: 1px solid var(--line); display: grid; place-items: center;
     }
-    h1 em { color: var(--accent); }
-    .hero p { margin-top: 28px; max-width: 520px; color: var(--muted); font-size: 19px; }
+    .portrait img { width: 100%; height: 100%; object-fit: cover; }
+    .portrait .ph { text-align: center; color: var(--dim); font-size: 14px; }
+    .portrait .ph b { display: block; font-size: 72px; color: #fff; font-weight: 800; letter-spacing: -0.04em; line-height: 1; margin-bottom: 10px; }
+    .hero h1 { font-weight: 800; font-size: clamp(44px, 7vw, 88px); line-height: .98; letter-spacing: -0.03em; }
+    .hero h1 .soft { font-weight: 400; }
+    .hero h1 .red { color: var(--red); text-shadow: 0 0 40px rgba(194,2,31,.6); }
+    .hero p { color: var(--muted); margin: 24px 0 30px; max-width: 440px; font-size: 17px; }
+    .hero .actions { display: flex; gap: 12px; flex-wrap: wrap; }
 
-    /* Section headings */
-    section { padding: 72px 0; border-top: 1px solid var(--line); }
-    .section-head { display: flex; justify-content: space-between; align-items: end; gap: 24px; flex-wrap: wrap; margin-bottom: 40px; }
-    h2 { font-family: "Instrument Serif", serif; font-weight: 400; font-size: clamp(34px, 5vw, 56px); line-height: 1.1; }
-
-    /* Filters */
-    .filters { display: flex; gap: 8px; flex-wrap: wrap; }
-    .filters button {
-      font: inherit; font-size: 14px; padding: 8px 16px; border-radius: 999px;
-      border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer; transition: all .2s;
-    }
-    .filters button:hover { border-color: var(--ink); }
-    .filters button.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
-
-    /* Work grid */
-    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 40px 28px; }
-    .project { cursor: pointer; }
-    .project.hidden { display: none; }
-    .thumb {
-      aspect-ratio: 4 / 3; border-radius: 14px; overflow: hidden; background: var(--card);
-      display: grid; place-items: center; position: relative;
-    }
-    .thumb img, .thumb .art { width: 100%; height: 100%; object-fit: cover; transition: transform .6s cubic-bezier(.2,.7,.2,1); }
-    .project:hover .thumb img, .project:hover .thumb .art { transform: scale(1.04); }
-    .meta { display: flex; justify-content: space-between; gap: 16px; margin-top: 16px; }
-    .meta h3 { font-size: 18px; font-weight: 500; }
-    .meta span { font-size: 14px; color: var(--muted); white-space: nowrap; }
-    .meta p { font-size: 15px; color: var(--muted); }
-
-    /* Placeholder artwork (replace with your own images) */
-    .art { display: grid; place-items: center; font-family: "Instrument Serif", serif; font-size: 64px; }
-    .a1 { background: #ff5a36; color: #fff3ee; }
-    .a2 { background: #1f3b2d; color: #d8f3c4; }
-    .a3 { background: #e8e1ff; color: #3a2a8c; }
-    .a4 { background: #ffd84d; color: #2b2300; }
-    .a5 { background: #141414; color: #fafaf8; }
-    .a6 { background: #cfe6f2; color: #0d3a52; }
+    /* Marquee */
+    .marquee { border-block: 1px solid var(--line); padding: 22px 0; overflow: hidden; background: #050505; }
+    .track { display: flex; gap: 56px; width: max-content; animation: scroll 28s linear infinite; }
+    .track span { font-weight: 800; font-size: clamp(22px, 3vw, 34px); letter-spacing: .02em; white-space: nowrap; display: flex; align-items: center; gap: 56px; }
+    .track span::after { content: "✦"; color: var(--red); font-size: .7em; }
+    .track span:nth-child(even) { color: transparent; -webkit-text-stroke: 1px rgba(255,255,255,.55); }
+    @keyframes scroll { to { transform: translateX(-50%); } }
 
     /* About */
-    .about { display: grid; grid-template-columns: 1fr 1.4fr; gap: 64px; }
-    .about p { color: var(--muted); margin-bottom: 18px; max-width: 60ch; }
-    .about p strong { color: var(--ink); font-weight: 500; }
-    .skills { display: grid; grid-template-columns: repeat(2, 1fr); gap: 32px; margin-top: 36px; }
-    .skills h4 { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 500; margin-bottom: 10px; }
-    .skills ul { list-style: none; }
-    .skills li { padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 15px; }
+    .about { text-align: center; }
+    .about p { font-size: clamp(20px, 2.6vw, 30px); line-height: 1.45; max-width: 860px; margin: 22px auto 0; color: #d6d6d6; font-weight: 400; }
+    .about p em { font-style: normal; color: #fff; font-weight: 600; }
+
+    /* Projects */
+    .projects { display: grid; gap: 22px; max-width: 860px; margin: 64px auto 0; }
+    .project {
+      display: grid; grid-template-columns: 1fr 1.05fr; gap: 28px; padding: 18px; border-radius: 22px;
+      background: linear-gradient(160deg, #111 0%, #050505 60%); border: 1px solid var(--line);
+      transition: transform .3s, border-color .3s;
+    }
+    .project:hover { transform: translateY(-4px); border-color: rgba(194,2,31,.6); }
+    .project .thumb {
+      aspect-ratio: 4 / 3; border-radius: 14px; overflow: hidden; position: relative;
+      background: radial-gradient(80% 70% at 30% 30%, rgba(194,2,31,.35), transparent 60%), #141414;
+      border: 1px solid rgba(255,255,255,.08); display: grid; place-items: center;
+    }
+    .project .thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .project .thumb .ph { font-size: 13px; color: var(--dim); letter-spacing: .1em; text-transform: uppercase; }
+    .project .body { display: flex; flex-direction: column; justify-content: center; position: relative; padding-right: 8px; }
+    .project .body .tag { position: absolute; top: 0; right: 0; }
+    .project .cat { font-size: 12px; color: var(--red); letter-spacing: .12em; text-transform: uppercase; font-weight: 700; margin-bottom: 10px; }
+    .project h3 { font-size: 24px; font-weight: 700; line-height: 1.2; margin-bottom: 10px; }
+    .project p { color: var(--muted); font-size: 15px; margin-bottom: 20px; }
+    .project .pill { align-self: flex-start; padding: 8px 18px; font-size: 12px; letter-spacing: .08em; }
+
+    /* Tech stack */
+    .stack-head { max-width: 860px; margin: 0 auto; }
+    .stack-head h2 { font-size: clamp(30px, 4vw, 44px); font-weight: 600; letter-spacing: -0.02em; margin-top: 8px; }
+    .stack-head p { color: var(--muted); max-width: 420px; margin-top: 10px; }
+    .stack { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; max-width: 860px; margin: 40px auto 0; }
+    .tool {
+      border-radius: 18px; padding: 18px; border: 1px solid var(--line);
+      background: radial-gradient(90% 70% at 100% 100%, rgba(194,2,31,.35), transparent 70%), #0a0a0a;
+      transition: transform .3s, border-color .3s;
+    }
+    .tool:hover { transform: translateY(-3px); border-color: rgba(194,2,31,.6); }
+    .tool .ico {
+      width: 46px; height: 46px; border-radius: 12px; display: grid; place-items: center;
+      font-weight: 800; font-size: 17px; margin-bottom: 26px;
+    }
+    .tool h4 { font-size: 15px; font-weight: 600; }
+    .tool span { font-size: 13px; color: var(--muted); }
 
     /* Contact */
-    .contact { text-align: center; padding: 120px 0; }
-    .contact h2 { font-size: clamp(40px, 7vw, 88px); }
-    .contact a.mail {
-      display: inline-block; margin-top: 28px; font-size: clamp(18px, 3vw, 26px);
-      border-bottom: 2px solid var(--accent); padding-bottom: 4px;
+    .contact-card {
+      max-width: 860px; margin: 0 auto; border-radius: 26px; border: 1px solid var(--line); padding: 44px;
+      display: grid; grid-template-columns: 1fr 1.2fr; gap: 44px; background: #070707;
     }
-    .socials { display: flex; justify-content: center; gap: 24px; margin-top: 36px; font-size: 15px; color: var(--muted); flex-wrap: wrap; }
-    .socials a:hover { color: var(--ink); }
-    footer { border-top: 1px solid var(--line); padding: 28px 0; font-size: 14px; color: var(--muted); }
+    .contact-card h2 { font-size: 34px; font-weight: 700; line-height: 1.1; margin-top: 10px; }
+    .contact-card .big {
+      margin-top: 40px; font-size: clamp(40px, 5vw, 56px); font-weight: 800; line-height: 1; letter-spacing: -0.03em;
+    }
+    .contact-card .big span { color: var(--red); text-shadow: 0 0 30px rgba(194,2,31,.6); }
+    form { display: grid; gap: 14px; align-content: start; }
+    form label { font-size: 13px; font-weight: 600; }
+    form input, form textarea {
+      width: 100%; margin-top: 6px; padding: 12px 14px; border-radius: 10px; font: inherit; font-size: 15px;
+      background: #141414; color: #fff; border: 1px solid var(--line); outline: none; transition: border-color .2s;
+    }
+    form input:focus, form textarea:focus { border-color: var(--red); }
+    form textarea { min-height: 120px; resize: vertical; }
+    form .pill { justify-self: start; margin-top: 4px; }
+    .socials { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 28px; font-size: 14px; color: var(--muted); }
+    .socials a:hover { color: #fff; }
+
+    footer { border-top: 1px solid var(--line); padding: 28px 0; color: var(--dim); font-size: 14px; }
     footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
 
-    /* Project popup */
-    dialog {
-      border: none; border-radius: 18px; padding: 0; width: min(880px, calc(100% - 32px));
-      max-height: calc(100vh - 48px); background: var(--bg); color: var(--ink);
-    }
-    dialog::backdrop { background: rgba(20,20,20,.55); backdrop-filter: blur(4px); }
-    .dlg-body { padding: 32px; }
-    .dlg-body .thumb { aspect-ratio: 16/9; margin-bottom: 24px; }
-    .dlg-body h3 { font-family: "Instrument Serif", serif; font-weight: 400; font-size: 40px; line-height: 1.1; }
-    .dlg-body .tag { color: var(--accent); font-size: 14px; margin: 8px 0 16px; }
-    .dlg-body p { color: var(--muted); }
-    .close {
-      position: sticky; top: 12px; float: right; margin: 12px 12px 0 0; width: 40px; height: 40px; border-radius: 50%;
-      border: 1px solid var(--line); background: var(--bg); font-size: 20px; cursor: pointer; z-index: 2;
+    /* Fade-in on scroll */
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity .8s ease, transform .8s ease; }
+    .reveal.in { opacity: 1; transform: none; }
+    @media (prefers-reduced-motion: reduce) {
+      .reveal { opacity: 1; transform: none; }
+      .track { animation: none; }
     }
 
-    @media (max-width: 760px) {
-      nav ul { gap: 18px; }
-      .hero { padding: 72px 0 64px; }
-      .grid { grid-template-columns: 1fr; }
-      .about { grid-template-columns: 1fr; gap: 24px; }
-      .dlg-body { padding: 20px; }
+    @media (max-width: 820px) {
+      header nav a:not(.pill) { display: none; }
+      .hero-inner { grid-template-columns: 1fr; gap: 36px; }
+      .portrait { max-width: 340px; }
+      .project { grid-template-columns: 1fr; }
+      .project .body { padding-top: 6px; }
+      .project .body .tag { position: static; align-self: flex-start; margin-bottom: 12px; }
+      .stack { grid-template-columns: repeat(2, 1fr); }
+      .contact-card { grid-template-columns: 1fr; padding: 28px; }
+      .contact-card .big { margin-top: 20px; }
+      section { padding: 80px 0; }
     }
-    @media (max-width: 420px) { nav ul li:first-child { display: none; } }
   </style>
 </head>
 <body>
 
+  <!-- Reusable red wave graphic -->
+  <svg width="0" height="0" style="position:absolute">
+    <defs>
+      <filter id="blur"><feGaussianBlur stdDeviation="6"/></filter>
+      <linearGradient id="wg" x1="0" x2="1">
+        <stop offset="0" stop-color="#c2021f" stop-opacity="0"/>
+        <stop offset=".6" stop-color="#c2021f"/>
+        <stop offset="1" stop-color="#ff2a3d"/>
+      </linearGradient>
+      <symbol id="wave" viewBox="0 0 400 200" preserveAspectRatio="none">
+        <path d="M0 150 C 80 150, 120 60, 190 90 S 300 190, 400 30" fill="none" stroke="url(#wg)" stroke-width="14" filter="url(#blur)"/>
+        <path d="M0 150 C 80 150, 120 60, 190 90 S 300 190, 400 30" fill="none" stroke="url(#wg)" stroke-width="2" opacity=".9"/>
+      </symbol>
+    </defs>
+  </svg>
+
   <header>
-    <nav class="wrap">
-      <!-- ✏️ EDIT: your name -->
-      <a href="#" class="logo">Your Name<span>.</span></a>
-      <ul>
-        <li><a href="#work">Work</a></li>
-        <li><a href="#about">About</a></li>
-        <li><a href="#contact">Contact</a></li>
-      </ul>
+    <span class="hey">Hey I'm Aditya,</span>
+    <nav>
+      <a href="#about">About</a>
+      <a href="#work">Work</a>
+      <a href="#tools">Tools</a>
+      <a href="#contact" class="pill">Connect</a>
     </nav>
   </header>
 
   <main>
-    <div class="hero wrap">
-      <div class="eyebrow"><span class="dot"></span> Available for freelance &amp; full-time roles</div>
-      <!-- ✏️ EDIT: your headline -->
-      <h1>Designing brands &amp; interfaces people <em>remember.</em></h1>
-      <p>I'm Your Name, a graphic and UI/UX designer who turns ideas into clear identities and easy-to-use digital products.</p>
+    <!-- HERO -->
+    <section class="hero glow">
+      <svg class="wave"><use href="#wave"/></svg>
+      <div class="wrap hero-inner">
+        <div class="portrait reveal">
+          <!-- ✏️ To add your photo: upload it as "images/me.png" and replace the <div class="ph">…</div> below with:
+               <img src="images/me.png" alt="Aditya"> -->
+          <div class="ph"><b>AD</b>Your photo here</div>
+        </div>
+        <div class="reveal">
+          <h1>UI/UX<br><span class="soft">&amp; Graphics</span><br><span class="red">DESIGNER</span></h1>
+          <p>Transforming ideas into immersive visuals, meaningful brand experiences, and intuitive digital interfaces through communication design, graphic design, and UI/UX thinking.</p>
+          <div class="actions">
+            <!-- ✏️ Upload your resume as "resume.pdf" and this button will work -->
+            <a href="resume.pdf" class="pill" target="_blank" rel="noopener">View Resume ↗</a>
+            <a href="#work" class="pill ghost">See my work</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MARQUEE -->
+    <div class="marquee" aria-hidden="true">
+      <div class="track">
+        <span>COMMUNICATION DESIGN</span><span>GRAPHIC DESIGN</span><span>UI / UX DESIGN</span><span>BRAND IDENTITY</span>
+        <span>COMMUNICATION DESIGN</span><span>GRAPHIC DESIGN</span><span>UI / UX DESIGN</span><span>BRAND IDENTITY</span>
+      </div>
     </div>
 
+    <!-- ABOUT -->
+    <section id="about" class="about">
+      <div class="wrap reveal">
+        <div class="label">Introduction</div>
+        <h2 class="title" style="margin-top:12px">About Me</h2>
+        <p>A <em>Fashion Communication</em> student at <em>NIFT Hyderabad</em>, exploring the intersection of UI/UX, graphic, and communication design. Passionate about building meaningful visual experiences through strategy, storytelling, and thoughtful design.</p>
+      </div>
+    </section>
+
+    <!-- PROJECTS -->
     <section id="work">
       <div class="wrap">
-        <div class="section-head">
-          <h2>Selected work</h2>
-          <div class="filters">
-            <button class="active" data-filter="all">All</button>
-            <button data-filter="branding">Graphic / Branding</button>
-            <button data-filter="uiux">UI / UX</button>
-          </div>
+        <div class="reveal">
+          <h2 class="title">A Journey Through My<br>Creative Design Process</h2>
+          <p class="sub">Browse projects and assignments that highlight my growth, visual thinking and creative execution.</p>
         </div>
 
         <!--
-          ✏️ EDIT YOUR PROJECTS HERE
-          For each project:
-            - data-cat: "branding" or "uiux" (used by the filter buttons)
-            - data-title / data-tag / data-desc: shown in the popup when clicked
-            - To use a real image, upload it into an "images" folder and replace
-              <div class="art a1">…</div> with  <img src="images/your-file.jpg" alt="Project name">
+          ✏️ EDIT YOUR PROJECTS HERE — copy one <article> block per project.
+          • Title, category and description: change the text.
+          • Image: upload into an "images" folder, then replace <div class="ph">…</div>
+            with <img src="images/your-file.jpg" alt="Project name">
+          • Button link: change href="#" to your Behance / PDF / case study link.
         -->
-        <div class="grid">
-          <article class="project" data-cat="branding"
-            data-title="Bloom Coffee Co."
-            data-tag="Brand identity · 2026"
-            data-desc="A warm, hand-crafted identity for a neighbourhood coffee roaster: logo, packaging, menu boards and social templates. Replace this text with the brief, your process, and the outcome.">
-            <div class="thumb"><div class="art a1">Bloom</div></div>
-            <div class="meta"><div><h3>Bloom Coffee Co.</h3><p>Logo, packaging &amp; signage</p></div><span>Branding</span></div>
+        <div class="projects">
+          <article class="project glow reveal">
+            <svg class="wave"><use href="#wave"/></svg>
+            <div class="thumb"><div class="ph">Project image</div></div>
+            <div class="body">
+              <span class="tag">Project 1</span>
+              <div class="cat">UI / UX Design</div>
+              <h3>Project Title</h3>
+              <p>A short one or two line description of the project — the brief, your role and the outcome.</p>
+              <a href="#" class="pill">EXPLORE WORK</a>
+            </div>
           </article>
 
-          <article class="project" data-cat="uiux"
-            data-title="Fieldnote App"
-            data-tag="Mobile app · UI/UX case study"
-            data-desc="Research, wireframes and a high-fidelity design system for a note-taking app built for students. Replace with your problem statement, user research, iterations and final screens.">
-            <div class="thumb"><div class="art a2">Fieldnote</div></div>
-            <div class="meta"><div><h3>Fieldnote App</h3><p>Research, wireframes &amp; UI</p></div><span>UI / UX</span></div>
+          <article class="project glow reveal">
+            <svg class="wave"><use href="#wave"/></svg>
+            <div class="thumb"><div class="ph">Project image</div></div>
+            <div class="body">
+              <span class="tag">Project 2</span>
+              <div class="cat">Brand Identity</div>
+              <h3>Project Title</h3>
+              <p>A short one or two line description of the project — the brief, your role and the outcome.</p>
+              <a href="#" class="pill">EXPLORE WORK</a>
+            </div>
           </article>
 
-          <article class="project" data-cat="uiux"
-            data-title="Orbit Dashboard"
-            data-tag="Web app · UI/UX"
-            data-desc="A clean analytics dashboard redesign that cut time-to-insight for small business owners. Replace with your own project story.">
-            <div class="thumb"><div class="art a3">Orbit</div></div>
-            <div class="meta"><div><h3>Orbit Dashboard</h3><p>Web app redesign</p></div><span>UI / UX</span></div>
+          <article class="project glow reveal">
+            <svg class="wave"><use href="#wave"/></svg>
+            <div class="thumb"><div class="ph">Project image</div></div>
+            <div class="body">
+              <span class="tag">Project 3</span>
+              <div class="cat">Research &amp; Documentation</div>
+              <h3>Project Title</h3>
+              <p>A short one or two line description of the project — the brief, your role and the outcome.</p>
+              <a href="#" class="pill">EXPLORE WORK</a>
+            </div>
           </article>
 
-          <article class="project" data-cat="branding"
-            data-title="Sunday Market Poster Series"
-            data-tag="Print · Poster design"
-            data-desc="A bold typographic poster series for a weekend market. Replace with your own project story.">
-            <div class="thumb"><div class="art a4">Sunday</div></div>
-            <div class="meta"><div><h3>Sunday Market</h3><p>Poster series</p></div><span>Branding</span></div>
+          <article class="project glow reveal">
+            <svg class="wave"><use href="#wave"/></svg>
+            <div class="thumb"><div class="ph">Project image</div></div>
+            <div class="body">
+              <span class="tag">Project 4</span>
+              <div class="cat">Graphic Design</div>
+              <h3>Project Title</h3>
+              <p>A short one or two line description of the project — the brief, your role and the outcome.</p>
+              <a href="#" class="pill">EXPLORE WORK</a>
+            </div>
           </article>
 
-          <article class="project" data-cat="branding"
-            data-title="Monolith Studio"
-            data-tag="Visual identity · Architecture firm"
-            data-desc="A restrained, typographic identity system for an architecture studio. Replace with your own project story.">
-            <div class="thumb"><div class="art a5">Monolith</div></div>
-            <div class="meta"><div><h3>Monolith Studio</h3><p>Identity system</p></div><span>Branding</span></div>
+          <article class="project glow reveal">
+            <svg class="wave"><use href="#wave"/></svg>
+            <div class="thumb"><div class="ph">Project image</div></div>
+            <div class="body">
+              <span class="tag">Project 5</span>
+              <div class="cat">Web Design</div>
+              <h3>Project Title</h3>
+              <p>A short one or two line description of the project — the brief, your role and the outcome.</p>
+              <a href="#" class="pill">EXPLORE WORK</a>
+            </div>
           </article>
 
-          <article class="project" data-cat="uiux"
-            data-title="Tide Travel Website"
-            data-tag="Website · UI/UX"
-            data-desc="A responsive booking website focused on making trip planning feel calm. Replace with your own project story.">
-            <div class="thumb"><div class="art a6">Tide</div></div>
-            <div class="meta"><div><h3>Tide Travel</h3><p>Responsive website</p></div><span>UI / UX</span></div>
+          <article class="project glow reveal">
+            <svg class="wave"><use href="#wave"/></svg>
+            <div class="thumb"><div class="ph">Project image</div></div>
+            <div class="body">
+              <span class="tag">Project 6</span>
+              <div class="cat">Communication Design</div>
+              <h3>Project Title</h3>
+              <p>A short one or two line description of the project — the brief, your role and the outcome.</p>
+              <a href="#" class="pill">EXPLORE WORK</a>
+            </div>
           </article>
         </div>
       </div>
     </section>
 
-    <section id="about">
-      <div class="wrap about">
-        <h2>About me</h2>
-        <div>
-          <!-- ✏️ EDIT: your story -->
-          <p><strong>Hi, I'm Your Name.</strong> I'm a designer based in Your City, working across brand identity and digital product design.</p>
-          <p>I care about ideas that are simple, useful and a little bit memorable. Whether it's a logo or a mobile app, I start by understanding people, then design, test and refine until it feels right.</p>
-          <div class="skills">
-            <div>
-              <h4>What I do</h4>
-              <ul><li>Brand identity</li><li>Logo &amp; type</li><li>UI design</li><li>UX research</li><li>Prototyping</li></ul>
-            </div>
-            <div>
-              <h4>Tools</h4>
-              <ul><li>Figma</li><li>Adobe Illustrator</li><li>Adobe Photoshop</li><li>InDesign</li><li>Framer</li></ul>
+    <!-- TECH STACK -->
+    <section id="tools">
+      <div class="wrap">
+        <div class="stack-head reveal">
+          <div class="label">Behind the process</div>
+          <h2>Tech Stacks</h2>
+          <p>The platforms and creative tools powering my design, research and execution.</p>
+        </div>
+        <div class="stack">
+          <div class="tool reveal"><div class="ico" style="background:#330000;color:#ff9a00">Ai</div><h4>Illustrator</h4><span>Vector &amp; logo design</span></div>
+          <div class="tool reveal"><div class="ico" style="background:#49021f;color:#ff3366">Id</div><h4>InDesign</h4><span>Layouts &amp; documentation</span></div>
+          <div class="tool reveal"><div class="ico" style="background:#001e36;color:#31a8ff">Ps</div><h4>Photoshop</h4><span>Image editing &amp; mockups</span></div>
+          <div class="tool reveal"><div class="ico" style="background:#1e1e1e;color:#fff">
+            <svg width="18" height="26" viewBox="0 0 38 57"><path fill="#1abcfe" d="M19 28.5a9.5 9.5 0 1 1 19 0 9.5 9.5 0 0 1-19 0z"/><path fill="#0acf83" d="M0 47.5A9.5 9.5 0 0 1 9.5 38H19v9.5a9.5 9.5 0 1 1-19 0z"/><path fill="#ff7262" d="M19 0v19h9.5a9.5 9.5 0 1 0 0-19H19z"/><path fill="#f24e1e" d="M0 9.5A9.5 9.5 0 0 0 9.5 19H19V0H9.5A9.5 9.5 0 0 0 0 9.5z"/><path fill="#a259ff" d="M0 28.5A9.5 9.5 0 0 0 9.5 38H19V19H9.5A9.5 9.5 0 0 0 0 28.5z"/></svg>
+          </div><h4>Figma</h4><span>UI design &amp; prototyping</span></div>
+          <div class="tool reveal"><div class="ico" style="background:#fff;color:#000">F</div><h4>Framer</h4><span>Interactive websites</span></div>
+          <div class="tool reveal"><div class="ico" style="background:#00005b;color:#9999ff">Pr</div><h4>Premiere Pro</h4><span>Video editing</span></div>
+          <div class="tool reveal"><div class="ico" style="background:#00c4cc;color:#fff">C</div><h4>Canva</h4><span>Quick social content</span></div>
+          <div class="tool reveal"><div class="ico" style="background:#7d2ae8;color:#fff">✦</div><h4>AI Tools</h4><span>Ideation &amp; research</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section id="contact">
+      <div class="wrap">
+        <div class="contact-card glow reveal">
+          <div>
+            <div class="label">Contact form</div>
+            <h2>Contact For<br>Work</h2>
+            <div class="big">Let's<br>work<br><span>together</span></div>
+            <div class="socials">
+              <!-- ✏️ EDIT: put your real profile links here -->
+              <a href="https://www.linkedin.com/" target="_blank" rel="noopener">LinkedIn ↗</a>
+              <a href="https://www.behance.net/" target="_blank" rel="noopener">Behance ↗</a>
+              <a href="https://www.instagram.com/" target="_blank" rel="noopener">Instagram ↗</a>
             </div>
           </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="contact" class="contact">
-      <div class="wrap">
-        <h2>Let's work together.</h2>
-        <!-- ✏️ EDIT: your email (both places on the next line) -->
-        <a class="mail" href="mailto:hello@example.com">hello@example.com</a>
-        <div class="socials">
-          <!-- ✏️ EDIT: your profile links -->
-          <a href="https://www.linkedin.com/" target="_blank" rel="noopener">LinkedIn</a>
-          <a href="https://www.behance.net/" target="_blank" rel="noopener">Behance</a>
-          <a href="https://dribbble.com/" target="_blank" rel="noopener">Dribbble</a>
-          <a href="https://www.instagram.com/" target="_blank" rel="noopener">Instagram</a>
+          <!-- ✏️ EDIT: replace hello@example.com in the line below with your email.
+               The form opens the visitor's email app with their message filled in. -->
+          <form id="contact-form" data-email="hello@example.com">
+            <label>Name<input name="name" required placeholder="Your name"></label>
+            <label>Email<input name="email" type="email" required placeholder="you@email.com"></label>
+            <label>Message<textarea name="message" required placeholder="Tell me about your project"></textarea></label>
+            <button class="pill" type="submit">Send Message →</button>
+          </form>
         </div>
       </div>
     </section>
@@ -271,45 +403,29 @@
 
   <footer>
     <div class="wrap">
-      <span>© <span id="year"></span> Your Name</span>
-      <span>Designed &amp; built with care</span>
+      <span>© <span id="year"></span> Aditya</span>
+      <span>UI/UX · Graphic · Communication Design</span>
     </div>
   </footer>
-
-  <dialog id="dlg">
-    <button class="close" aria-label="Close">×</button>
-    <div class="dlg-body">
-      <div class="thumb" id="dlg-thumb"></div>
-      <h3 id="dlg-title"></h3>
-      <div class="tag" id="dlg-tag"></div>
-      <p id="dlg-desc"></p>
-    </div>
-  </dialog>
 
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
 
-    // Filter buttons
-    const buttons = document.querySelectorAll('.filters button');
-    const projects = document.querySelectorAll('.project');
-    buttons.forEach(btn => btn.addEventListener('click', () => {
-      buttons.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      const f = btn.dataset.filter;
-      projects.forEach(p => p.classList.toggle('hidden', f !== 'all' && p.dataset.cat !== f));
-    }));
+    // Fade sections in as you scroll
+    const io = new IntersectionObserver(entries => entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+    }), { threshold: 0.12 });
+    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 
-    // Project popup
-    const dlg = document.getElementById('dlg');
-    projects.forEach(p => p.addEventListener('click', () => {
-      document.getElementById('dlg-thumb').innerHTML = p.querySelector('.thumb').innerHTML;
-      document.getElementById('dlg-title').textContent = p.dataset.title;
-      document.getElementById('dlg-tag').textContent = p.dataset.tag;
-      document.getElementById('dlg-desc').textContent = p.dataset.desc;
-      dlg.showModal();
-    }));
-    dlg.querySelector('.close').addEventListener('click', () => dlg.close());
-    dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
+    // Contact form → opens the visitor's email app
+    const form = document.getElementById('contact-form');
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const d = new FormData(form);
+      const subject = encodeURIComponent('Portfolio enquiry from ' + d.get('name'));
+      const body = encodeURIComponent(d.get('message') + '\n\n— ' + d.get('name') + ' (' + d.get('email') + ')');
+      window.location.href = 'mailto:' + form.dataset.email + '?subject=' + subject + '&body=' + body;
+    });
   </script>
 </body>
 </html>
