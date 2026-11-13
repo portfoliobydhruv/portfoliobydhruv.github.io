@@ -177,6 +177,52 @@
       .sidenav a svg { width: 17px; height: 17px; }
     }
 
+    /* ---------- IN-SITE PROJECT VIEWER (PDFs open here, not in a new tab) ---------- */
+    .viewer {
+      position: fixed; inset: 0; z-index: 100;
+      background: rgba(12,12,12,.94);
+      display: flex; flex-direction: column;
+      animation: vfade .25s ease;
+    }
+    .viewer[hidden] { display: none; }
+    @keyframes vfade { from { opacity: 0; } }
+    .viewer-bar {
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      padding: 14px 20px; color: #fff;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    .viewer-bar h2 { font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .viewer-close {
+      flex: none; width: 38px; height: 38px; border-radius: 50%; border: 0; cursor: pointer;
+      background: #fff; color: var(--ink); font: 700 20px/1 "Montserrat", sans-serif;
+      display: grid; place-items: center; transition: transform .2s ease;
+    }
+    .viewer-close:hover { transform: rotate(90deg); }
+    .viewer-body {
+      flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+      padding: 24px 16px 60px;
+    }
+    .viewer-page {
+      max-width: 1100px; margin: 0 auto 16px;
+      background: #fff; border-radius: 6px; overflow: hidden;
+    }
+    .viewer-strip { position: relative; background: #f3f3f3; }
+    .viewer-strip:not(:has(canvas))::after {
+      content: ""; position: absolute; top: 50%; left: 50%;
+      width: 26px; height: 26px; margin: -13px 0 0 -13px;
+      border: 3px solid #ddd; border-top-color: #888; border-radius: 50%;
+      animation: vspin .8s linear infinite;
+    }
+    @keyframes vspin { to { transform: rotate(360deg); } }
+    .viewer-strip canvas { display: block; width: 100%; height: 100%; }
+    .viewer-status { color: #bbb; text-align: center; font-size: 14px; padding: 60px 0; }
+    .viewer-status a { color: #fff; }
+    @media (max-width: 820px) {
+      .viewer-bar { padding: 10px 14px; }
+      .viewer-body { padding: 12px 8px 40px; }
+      .viewer-page { margin-bottom: 8px; border-radius: 4px; }
+    }
+
     /* ---------- FEATURED PROJECTS ---------- */
     .featured {
       max-width: 1240px;
@@ -483,7 +529,7 @@
     <div class="row">
       <h3>UI/UX Design <span class="count">4 projects</span></h3>
       <div class="cards">
-        <a class="card" href="ECO%20app%20design%20apple.pdf" target="_blank" rel="noopener"><div class="thumb"><img src="thumbnails/ECO%20-%20App%20Design.png" alt="ECO emergency care app screens on phones" loading="lazy" style="object-position: center bottom"></div><div class="title">ECO - App Design</div><div class="sub">UI/UX Design</div></a>
+        <a class="card" href="ECO%20app%20design%20apple.pdf" data-pdf="ECO%20app%20design%20apple.pdf"><div class="thumb"><img src="thumbnails/ECO%20-%20App%20Design.png" alt="ECO emergency care app screens on phones" loading="lazy" style="object-position: center bottom"></div><div class="title">ECO - App Design</div><div class="sub">UI/UX Design</div></a>
         <a class="card empty named" href="#"><div class="thumb"><span>Coming soon</span></div><div class="title">Qutub Shahi Tombs - Website</div><div class="sub">UI/UX Design</div></a>
         <a class="card empty named" href="#"><div class="thumb"><span>Coming soon</span></div><div class="title">Kali Brand Logo</div><div class="sub">UI/UX Design</div></a>
         <a class="card empty named" href="#"><div class="thumb"><span>Coming soon</span></div><div class="title">Inclusive Design - Website</div><div class="sub">UI/UX Design</div></a>
@@ -523,7 +569,119 @@
     </div>
   </section>
 
+  <!-- in-site viewer: any link with data-pdf="file.pdf" opens here -->
+  <div class="viewer" id="viewer" hidden role="dialog" aria-modal="true" aria-labelledby="viewer-title">
+    <div class="viewer-bar">
+      <h2 id="viewer-title"></h2>
+      <button class="viewer-close" type="button" aria-label="Close project">×</button>
+    </div>
+    <div class="viewer-body" id="viewer-body"></div>
+  </div>
+
   <script>
+    // ---------- project viewer (renders PDF pages inside the site with PDF.js) ----------
+    (() => {
+      const PDFJS = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+      const viewer = document.getElementById('viewer');
+      const body = document.getElementById('viewer-body');
+      const titleEl = document.getElementById('viewer-title');
+      let lib, doc, observer, lastFocus, pushed = false, session = 0;
+
+      const loadLib = () => lib || (lib = new Promise((res, rej) => {
+        const s = document.createElement('script');
+        s.src = PDFJS;
+        s.onload = () => { pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS.replace('pdf.min.js', 'pdf.worker.min.js'); res(pdfjsLib); };
+        s.onerror = rej;
+        document.head.appendChild(s);
+      }));
+
+      const status = html => { body.innerHTML = '<p class="viewer-status">' + html + '</p>'; };
+
+      async function open(url, title) {
+        const my = ++session;
+        lastFocus = document.activeElement;
+        titleEl.textContent = title;
+        viewer.hidden = false;
+        document.documentElement.style.overflow = 'hidden';
+        viewer.querySelector('.viewer-close').focus();
+        if (!pushed) { history.pushState({ viewer: true }, ''); pushed = true; }
+        status('Loading project…');
+        try {
+          const pdfjs = await loadLib();
+          const task = pdfjs.getDocument(url);
+          task.onProgress = p => { if (p.total && my === session) status('Loading project… ' + Math.round(p.loaded / p.total * 100) + '%'); };
+          doc = await task.promise;
+          if (my !== session) return;
+          body.innerHTML = '';
+          observer = new IntersectionObserver(entries => entries.forEach(e => {
+            if (e.isIntersecting) { observer.unobserve(e.target); render(e.target, my); }
+          }), { root: body, rootMargin: '800px 0px' });
+          // tall pages are cut into strips so phones (canvas size limits) can draw them,
+          // and each strip is only drawn when it scrolls near the screen
+          for (let n = 1; n <= doc.numPages; n++) {
+            const page = await doc.getPage(n);
+            if (my !== session) return;
+            const vp = page.getViewport({ scale: 1 });
+            const stripH = vp.width * 0.75;
+            const wrap = document.createElement('div');
+            wrap.className = 'viewer-page';
+            for (let y = 0; y < vp.height; y += stripH) {
+              const h = Math.min(stripH, vp.height - y);
+              const strip = document.createElement('div');
+              strip.className = 'viewer-strip';
+              strip.dataset.page = n; strip.dataset.y = y; strip.dataset.h = h;
+              strip.style.aspectRatio = vp.width + ' / ' + h;
+              wrap.appendChild(strip);
+              observer.observe(strip);
+            }
+            body.appendChild(wrap);
+          }
+        } catch (err) {
+          if (my === session) status('Couldn’t load the project here. <a href="' + url + '">Open the PDF</a>');
+        }
+      }
+
+      // draw strips one at a time so the phone doesn't run out of memory
+      let queue = Promise.resolve();
+      function render(strip, my) {
+        queue = queue.then(async () => {
+          if (my !== session || !doc) return;
+          const page = await doc.getPage(+strip.dataset.page);
+          const base = page.getViewport({ scale: 1 });
+          const dpr = Math.min(window.devicePixelRatio || 1, 2);
+          const scale = strip.clientWidth * dpr / base.width;
+          const y = +strip.dataset.y, h = +strip.dataset.h;
+          const vp = page.getViewport({ scale, offsetY: -y * scale });
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.round(base.width * scale);
+          canvas.height = Math.round(h * scale);
+          await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+          if (my === session) strip.appendChild(canvas);
+        }).catch(() => {});
+      }
+
+      function close(fromHistory) {
+        if (viewer.hidden) return;
+        session++;
+        viewer.hidden = true;
+        document.documentElement.style.overflow = '';
+        if (observer) observer.disconnect();
+        if (doc) { doc.destroy(); doc = null; }
+        body.innerHTML = '';
+        if (pushed) { pushed = false; if (!fromHistory) history.back(); }
+        if (lastFocus) lastFocus.focus({ preventScroll: true });
+      }
+
+      document.querySelectorAll('[data-pdf]').forEach(a => a.addEventListener('click', e => {
+        e.preventDefault();
+        const t = a.querySelector('.title, h3');
+        open(a.dataset.pdf, t ? t.childNodes[0].textContent.trim() : 'Project');
+      }));
+      viewer.querySelector('.viewer-close').addEventListener('click', () => close(false));
+      addEventListener('keydown', e => { if (e.key === 'Escape') close(false); });
+      addEventListener('popstate', () => close(true));   // phone back button closes the project
+    })();
+
     // empty slots shouldn't jump the page to the top when clicked
     document.querySelectorAll('.card.empty, .fcard.empty').forEach(c =>
       c.addEventListener('click', e => e.preventDefault()));
