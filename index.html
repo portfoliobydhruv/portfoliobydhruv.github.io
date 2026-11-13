@@ -126,6 +126,13 @@
     .project h3 { font-size: 24px; font-weight: 700; line-height: 1.2; margin-bottom: 10px; }
     .project p { color: var(--muted); font-size: 15px; margin-bottom: 20px; }
     .project .pill { align-self: flex-start; padding: 8px 18px; font-size: 12px; letter-spacing: .08em; }
+    /* Clickable project cards: the whole card opens the project */
+    .card-link { position: absolute; inset: 0; z-index: 2; border-radius: inherit; }
+    .card-link:focus-visible { outline: 2px solid var(--red); outline-offset: 3px; }
+    .project.linked .tag { transition: background .2s, color .2s; }
+    .project.linked:hover .tag { background: var(--red); color: #fff; }
+    .project .open { display: inline-flex; gap: 6px; font-size: 13px; font-weight: 600; color: #fff; margin-top: -6px; }
+    .project.linked:hover .open { color: var(--red); }
 
     /* Tech stack */
     .stack-head { max-width: 860px; margin: 0 auto; }
@@ -269,8 +276,10 @@
           • Title, category and description: change the text.
           • Image: images currently load from your old Framer site. To host them here instead,
             upload them into an "images" folder and change src="…" to "images/your-file.jpg".
-          • To add a link button later, put this after the <p>…</p>:
-            <a href="YOUR-LINK" class="pill" target="_blank" rel="noopener">EXPLORE WORK</a>
+          • To make a whole card clickable (see Project 6): add "linked" to the article's class,
+            then put this as the first line inside the <article>:
+            <a class="card-link" href="YOUR-FILE-OR-LINK" target="_blank" rel="noopener" aria-label="Open project"></a>
+            (In file names, write spaces as %20.)
         -->
         <div class="projects">
           <article class="project glow reveal">
@@ -328,14 +337,16 @@
             </div>
           </article>
 
-          <article class="project glow reveal">
+          <article class="project glow reveal linked">
+            <a class="card-link" href="ECO%20app%20design%20apple.pdf" target="_blank" rel="noopener" aria-label="Open ECO — App Design project (PDF)"></a>
             <svg class="wave"><use href="#wave"/></svg>
             <div class="thumb"><img src="https://framerusercontent.com/images/ATyzKTVMqDpGC4E91gDuabmqLnI.jpg?scale-down-to=1024" alt="ECO emergency healthcare app design" loading="lazy"></div>
             <div class="body">
-              <span class="tag">Project 6</span>
+              <span class="tag">Project 6 ↗</span>
               <div class="cat">App · UI / UX</div>
               <h3>ECO — App Design</h3>
               <p>A mobile healthcare app concept designed to simplify emergency assistance, improve accessibility, and create a seamless experience during critical situations.</p>
+              <span class="open">View project ↗</span>
             </div>
           </article>
 
