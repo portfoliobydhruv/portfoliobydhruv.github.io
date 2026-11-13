@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- ✏️ EDIT: your name -->
+  <title>Your Name — Designer</title>
+  <meta name="description" content="Portfolio of Your Name, graphic and UI/UX designer.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #fafaf8;
+      --ink: #141414;
+      --muted: #6b6b66;
+      --line: #e4e3de;
+      --card: #efeee9;
+      --accent: #ff5a36;
+      --max: 1200px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg); color: var(--ink);
+      font-family: "Inter", system-ui, sans-serif; font-size: 17px; line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; display: block; }
+    .wrap { max-width: var(--max); margin: 0 auto; padding: 0 24px; }
+
+    /* Nav */
+    header {
+      position: sticky; top: 0; z-index: 10;
+      background: color-mix(in srgb, var(--bg) 88%, transparent);
+      backdrop-filter: blur(10px); border-bottom: 1px solid var(--line);
+    }
+    nav { display: flex; justify-content: space-between; align-items: center; height: 64px; }
+    .logo { font-weight: 600; letter-spacing: -0.01em; }
+    .logo span { color: var(--accent); }
+    nav ul { display: flex; gap: 28px; list-style: none; font-size: 15px; }
+    nav ul a { color: var(--muted); transition: color .2s; }
+    nav ul a:hover { color: var(--ink); }
+
+    /* Hero */
+    .hero { padding: 120px 0 96px; }
+    .eyebrow { font-size: 14px; color: var(--muted); display: flex; align-items: center; gap: 10px; margin-bottom: 28px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #2bb673; box-shadow: 0 0 0 4px #2bb67322; }
+    h1 {
+      font-family: "Instrument Serif", serif; font-weight: 400;
+      font-size: clamp(44px, 8vw, 104px); line-height: 1.02; letter-spacing: -0.02em; max-width: 14ch;
+    }
+    h1 em { color: var(--accent); }
+    .hero p { margin-top: 28px; max-width: 520px; color: var(--muted); font-size: 19px; }
+
+    /* Section headings */
+    section { padding: 72px 0; border-top: 1px solid var(--line); }
+    .section-head { display: flex; justify-content: space-between; align-items: end; gap: 24px; flex-wrap: wrap; margin-bottom: 40px; }
+    h2 { font-family: "Instrument Serif", serif; font-weight: 400; font-size: clamp(34px, 5vw, 56px); line-height: 1.1; }
+
+    /* Filters */
+    .filters { display: flex; gap: 8px; flex-wrap: wrap; }
+    .filters button {
+      font: inherit; font-size: 14px; padding: 8px 16px; border-radius: 999px;
+      border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer; transition: all .2s;
+    }
+    .filters button:hover { border-color: var(--ink); }
+    .filters button.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+    /* Work grid */
+    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 40px 28px; }
+    .project { cursor: pointer; }
+    .project.hidden { display: none; }
+    .thumb {
+      aspect-ratio: 4 / 3; border-radius: 14px; overflow: hidden; background: var(--card);
+      display: grid; place-items: center; position: relative;
+    }
+    .thumb img, .thumb .art { width: 100%; height: 100%; object-fit: cover; transition: transform .6s cubic-bezier(.2,.7,.2,1); }
+    .project:hover .thumb img, .project:hover .thumb .art { transform: scale(1.04); }
+    .meta { display: flex; justify-content: space-between; gap: 16px; margin-top: 16px; }
+    .meta h3 { font-size: 18px; font-weight: 500; }
+    .meta span { font-size: 14px; color: var(--muted); white-space: nowrap; }
+    .meta p { font-size: 15px; color: var(--muted); }
+
+    /* Placeholder artwork (replace with your own images) */
+    .art { display: grid; place-items: center; font-family: "Instrument Serif", serif; font-size: 64px; }
+    .a1 { background: #ff5a36; color: #fff3ee; }
+    .a2 { background: #1f3b2d; color: #d8f3c4; }
+    .a3 { background: #e8e1ff; color: #3a2a8c; }
+    .a4 { background: #ffd84d; color: #2b2300; }
+    .a5 { background: #141414; color: #fafaf8; }
+    .a6 { background: #cfe6f2; color: #0d3a52; }
+
+    /* About */
+    .about { display: grid; grid-template-columns: 1fr 1.4fr; gap: 64px; }
+    .about p { color: var(--muted); margin-bottom: 18px; max-width: 60ch; }
+    .about p strong { color: var(--ink); font-weight: 500; }
+    .skills { display: grid; grid-template-columns: repeat(2, 1fr); gap: 32px; margin-top: 36px; }
+    .skills h4 { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 500; margin-bottom: 10px; }
+    .skills ul { list-style: none; }
+    .skills li { padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 15px; }
+
+    /* Contact */
+    .contact { text-align: center; padding: 120px 0; }
+    .contact h2 { font-size: clamp(40px, 7vw, 88px); }
+    .contact a.mail {
+      display: inline-block; margin-top: 28px; font-size: clamp(18px, 3vw, 26px);
+      border-bottom: 2px solid var(--accent); padding-bottom: 4px;
+    }
+    .socials { display: flex; justify-content: center; gap: 24px; margin-top: 36px; font-size: 15px; color: var(--muted); flex-wrap: wrap; }
+    .socials a:hover { color: var(--ink); }
+    footer { border-top: 1px solid var(--line); padding: 28px 0; font-size: 14px; color: var(--muted); }
+    footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+
+    /* Project popup */
+    dialog {
+      border: none; border-radius: 18px; padding: 0; width: min(880px, calc(100% - 32px));
+      max-height: calc(100vh - 48px); background: var(--bg); color: var(--ink);
+    }
+    dialog::backdrop { background: rgba(20,20,20,.55); backdrop-filter: blur(4px); }
+    .dlg-body { padding: 32px; }
+    .dlg-body .thumb { aspect-ratio: 16/9; margin-bottom: 24px; }
+    .dlg-body h3 { font-family: "Instrument Serif", serif; font-weight: 400; font-size: 40px; line-height: 1.1; }
+    .dlg-body .tag { color: var(--accent); font-size: 14px; margin: 8px 0 16px; }
+    .dlg-body p { color: var(--muted); }
+    .close {
+      position: sticky; top: 12px; float: right; margin: 12px 12px 0 0; width: 40px; height: 40px; border-radius: 50%;
+      border: 1px solid var(--line); background: var(--bg); font-size: 20px; cursor: pointer; z-index: 2;
+    }
+
+    @media (max-width: 760px) {
+      nav ul { gap: 18px; }
+      .hero { padding: 72px 0 64px; }
+      .grid { grid-template-columns: 1fr; }
+      .about { grid-template-columns: 1fr; gap: 24px; }
+      .dlg-body { padding: 20px; }
+    }
+    @media (max-width: 420px) { nav ul li:first-child { display: none; } }
+  </style>
+</head>
+<body>
+
+  <header>
+    <nav class="wrap">
+      <!-- ✏️ EDIT: your name -->
+      <a href="#" class="logo">Your Name<span>.</span></a>
+      <ul>
+        <li><a href="#work">Work</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <div class="hero wrap">
+      <div class="eyebrow"><span class="dot"></span> Available for freelance &amp; full-time roles</div>
+      <!-- ✏️ EDIT: your headline -->
+      <h1>Designing brands &amp; interfaces people <em>remember.</em></h1>
+      <p>I'm Your Name, a graphic and UI/UX designer who turns ideas into clear identities and easy-to-use digital products.</p>
+    </div>
+
+    <section id="work">
+      <div class="wrap">
+        <div class="section-head">
+          <h2>Selected work</h2>
+          <div class="filters">
+            <button class="active" data-filter="all">All</button>
+            <button data-filter="branding">Graphic / Branding</button>
+            <button data-filter="uiux">UI / UX</button>
+          </div>
+        </div>
+
+        <!--
+          ✏️ EDIT YOUR PROJECTS HERE
+          For each project:
+            - data-cat: "branding" or "uiux" (used by the filter buttons)
+            - data-title / data-tag / data-desc: shown in the popup when clicked
+            - To use a real image, upload it into an "images" folder and replace
+              <div class="art a1">…</div> with  <img src="images/your-file.jpg" alt="Project name">
+        -->
+        <div class="grid">
+          <article class="project" data-cat="branding"
+            data-title="Bloom Coffee Co."
+            data-tag="Brand identity · 2026"
+            data-desc="A warm, hand-crafted identity for a neighbourhood coffee roaster: logo, packaging, menu boards and social templates. Replace this text with the brief, your process, and the outcome.">
+            <div class="thumb"><div class="art a1">Bloom</div></div>
+            <div class="meta"><div><h3>Bloom Coffee Co.</h3><p>Logo, packaging &amp; signage</p></div><span>Branding</span></div>
+          </article>
+
+          <article class="project" data-cat="uiux"
+            data-title="Fieldnote App"
+            data-tag="Mobile app · UI/UX case study"
+            data-desc="Research, wireframes and a high-fidelity design system for a note-taking app built for students. Replace with your problem statement, user research, iterations and final screens.">
+            <div class="thumb"><div class="art a2">Fieldnote</div></div>
+            <div class="meta"><div><h3>Fieldnote App</h3><p>Research, wireframes &amp; UI</p></div><span>UI / UX</span></div>
+          </article>
+
+          <article class="project" data-cat="uiux"
+            data-title="Orbit Dashboard"
+            data-tag="Web app · UI/UX"
+            data-desc="A clean analytics dashboard redesign that cut time-to-insight for small business owners. Replace with your own project story.">
+            <div class="thumb"><div class="art a3">Orbit</div></div>
+            <div class="meta"><div><h3>Orbit Dashboard</h3><p>Web app redesign</p></div><span>UI / UX</span></div>
+          </article>
+
+          <article class="project" data-cat="branding"
+            data-title="Sunday Market Poster Series"
+            data-tag="Print · Poster design"
+            data-desc="A bold typographic poster series for a weekend market. Replace with your own project story.">
+            <div class="thumb"><div class="art a4">Sunday</div></div>
+            <div class="meta"><div><h3>Sunday Market</h3><p>Poster series</p></div><span>Branding</span></div>
+          </article>
+
+          <article class="project" data-cat="branding"
+            data-title="Monolith Studio"
+            data-tag="Visual identity · Architecture firm"
+            data-desc="A restrained, typographic identity system for an architecture studio. Replace with your own project story.">
+            <div class="thumb"><div class="art a5">Monolith</div></div>
+            <div class="meta"><div><h3>Monolith Studio</h3><p>Identity system</p></div><span>Branding</span></div>
+          </article>
+
+          <article class="project" data-cat="uiux"
+            data-title="Tide Travel Website"
+            data-tag="Website · UI/UX"
+            data-desc="A responsive booking website focused on making trip planning feel calm. Replace with your own project story.">
+            <div class="thumb"><div class="art a6">Tide</div></div>
+            <div class="meta"><div><h3>Tide Travel</h3><p>Responsive website</p></div><span>UI / UX</span></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="about">
+      <div class="wrap about">
+        <h2>About me</h2>
+        <div>
+          <!-- ✏️ EDIT: your story -->
+          <p><strong>Hi, I'm Your Name.</strong> I'm a designer based in Your City, working across brand identity and digital product design.</p>
+          <p>I care about ideas that are simple, useful and a little bit memorable. Whether it's a logo or a mobile app, I start by understanding people, then design, test and refine until it feels right.</p>
+          <div class="skills">
+            <div>
+              <h4>What I do</h4>
+              <ul><li>Brand identity</li><li>Logo &amp; type</li><li>UI design</li><li>UX research</li><li>Prototyping</li></ul>
+            </div>
+            <div>
+              <h4>Tools</h4>
+              <ul><li>Figma</li><li>Adobe Illustrator</li><li>Adobe Photoshop</li><li>InDesign</li><li>Framer</li></ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" class="contact">
+      <div class="wrap">
+        <h2>Let's work together.</h2>
+        <!-- ✏️ EDIT: your email (both places on the next line) -->
+        <a class="mail" href="mailto:hello@example.com">hello@example.com</a>
+        <div class="socials">
+          <!-- ✏️ EDIT: your profile links -->
+          <a href="https://www.linkedin.com/" target="_blank" rel="noopener">LinkedIn</a>
+          <a href="https://www.behance.net/" target="_blank" rel="noopener">Behance</a>
+          <a href="https://dribbble.com/" target="_blank" rel="noopener">Dribbble</a>
+          <a href="https://www.instagram.com/" target="_blank" rel="noopener">Instagram</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span>© <span id="year"></span> Your Name</span>
+      <span>Designed &amp; built with care</span>
+    </div>
+  </footer>
+
+  <dialog id="dlg">
+    <button class="close" aria-label="Close">×</button>
+    <div class="dlg-body">
+      <div class="thumb" id="dlg-thumb"></div>
+      <h3 id="dlg-title"></h3>
+      <div class="tag" id="dlg-tag"></div>
+      <p id="dlg-desc"></p>
+    </div>
+  </dialog>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Filter buttons
+    const buttons = document.querySelectorAll('.filters button');
+    const projects = document.querySelectorAll('.project');
+    buttons.forEach(btn => btn.addEventListener('click', () => {
+      buttons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const f = btn.dataset.filter;
+      projects.forEach(p => p.classList.toggle('hidden', f !== 'all' && p.dataset.cat !== f));
+    }));
+
+    // Project popup
+    const dlg = document.getElementById('dlg');
+    projects.forEach(p => p.addEventListener('click', () => {
+      document.getElementById('dlg-thumb').innerHTML = p.querySelector('.thumb').innerHTML;
+      document.getElementById('dlg-title').textContent = p.dataset.title;
+      document.getElementById('dlg-tag').textContent = p.dataset.tag;
+      document.getElementById('dlg-desc').textContent = p.dataset.desc;
+      dlg.showModal();
+    }));
+    dlg.querySelector('.close').addEventListener('click', () => dlg.close());
+    dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
+  </script>
+</body>
+</html>
