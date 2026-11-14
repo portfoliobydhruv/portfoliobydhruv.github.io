@@ -223,6 +223,37 @@
       .viewer-page { margin-bottom: 8px; border-radius: 4px; }
     }
 
+    /* ---------- PORTRAIT (follows the cursor) ---------- */
+    .meet {
+      display: grid; place-items: center;
+      padding: 30px 24px 110px;
+      perspective: 1200px;
+    }
+    .meet-card {
+      --rx: 0deg; --ry: 0deg; --gx: 50%; --gy: 30%; --px: 0px; --py: 0px;
+      position: relative;
+      width: min(380px, 72vw);
+      aspect-ratio: 1143 / 1376;
+      border-radius: 28px;
+      overflow: hidden;
+      transform: rotateX(var(--rx)) rotateY(var(--ry));
+      transform-style: preserve-3d;
+      box-shadow: 0 40px 70px -30px rgba(40,60,40,.45), 0 10px 24px -12px rgba(0,0,0,.18);
+      will-change: transform;
+    }
+    .meet-card img {
+      position: absolute; inset: -4%;
+      width: 108%; height: 108%; max-width: none;
+      object-fit: cover;
+      transform: translate(var(--px), var(--py));
+    }
+    .meet-card::after {   /* soft light that moves with the cursor */
+      content: ""; position: absolute; inset: 0; pointer-events: none;
+      background: radial-gradient(circle at var(--gx) var(--gy), rgba(255,255,255,.28), transparent 55%);
+      mix-blend-mode: soft-light;
+    }
+    @media (max-width: 820px) { .meet { padding: 10px 52px 80px 20px; } }
+
     /* ---------- FEATURED PROJECTS ---------- */
     .featured {
       max-width: 1240px;
@@ -479,6 +510,13 @@
     </div>
   </section>
 
+  <!-- ================= PORTRAIT (tilts toward the cursor) ================= -->
+  <section class="meet" id="meet" aria-label="Portrait of Aditya">
+    <div class="meet-card">
+      <img src="assets/portrait.webp" alt="3D illustrated portrait of Aditya in a navy shirt" width="1143" height="1376" loading="lazy">
+    </div>
+  </section>
+
   <!-- ================= FEATURED PROJECTS =================
        To fill a card: remove class "empty", set href, put <img src="assets/..." alt="..."> inside .art-box
        (transparent PNG illustrations look best), then edit the title, pill and text. -->
@@ -683,6 +721,41 @@
       viewer.querySelector('.viewer-close').addEventListener('click', () => close(false));
       addEventListener('keydown', e => { if (e.key === 'Escape') close(false); });
       addEventListener('popstate', () => close(true));   // phone back button closes the project
+    })();
+
+    // ---------- portrait follows the cursor (smoothed, like a scrub) ----------
+    (() => {
+      const area = document.getElementById('meet');
+      const card = area && area.querySelector('.meet-card');
+      if (!card || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const SMOOTH = 0.12, MAX = 14;           // inertia, max tilt in degrees
+      let tx = 0, ty = 0, x = 0, y = 0, raf = 0;
+      const setTarget = (cx, cy) => {          // cursor anywhere on screen, -1..1 relative to the card
+        const r = card.getBoundingClientRect();
+        tx = Math.max(-1, Math.min(1, (cx - (r.left + r.width / 2)) / (innerWidth / 2)));
+        ty = Math.max(-1, Math.min(1, (cy - (r.top + r.height / 2)) / (innerHeight / 2)));
+        if (!raf) raf = requestAnimationFrame(tick);
+      };
+      function tick() {
+        x += (tx - x) * SMOOTH; y += (ty - y) * SMOOTH;
+        card.style.setProperty('--ry', (x * MAX).toFixed(2) + 'deg');
+        card.style.setProperty('--rx', (-y * MAX).toFixed(2) + 'deg');
+        card.style.setProperty('--px', (-x * 10).toFixed(1) + 'px');
+        card.style.setProperty('--py', (-y * 10).toFixed(1) + 'px');
+        card.style.setProperty('--gx', (50 + x * 40).toFixed(1) + '%');
+        card.style.setProperty('--gy', (30 + y * 40).toFixed(1) + '%');
+        raf = (Math.abs(tx - x) + Math.abs(ty - y) > 0.001) ? requestAnimationFrame(tick) : 0;
+      }
+      addEventListener('pointermove', e => setTarget(e.clientX, e.clientY), { passive: true });
+      document.addEventListener('pointerleave', () => { tx = ty = 0; if (!raf) raf = requestAnimationFrame(tick); });
+      // phones: no cursor, so the card tilts gently as it scrolls past
+      if (matchMedia('(hover: none)').matches) {
+        addEventListener('scroll', () => {
+          const r = card.getBoundingClientRect();
+          tx = 0; ty = Math.max(-1, Math.min(1, (r.top + r.height / 2 - innerHeight / 2) / (innerHeight / 2))) * -0.6;
+          if (!raf) raf = requestAnimationFrame(tick);
+        }, { passive: true });
+      }
     })();
 
     // empty slots shouldn't jump the page to the top when clicked
