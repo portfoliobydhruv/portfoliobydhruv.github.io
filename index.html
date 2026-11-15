@@ -832,22 +832,25 @@
       addEventListener('popstate', () => close(true));   // phone back button closes the project
     })();
 
-    // ---------- portrait: head turns toward the cursor, eyes follow, he blinks ----------
-    // The cut-out portrait is split into two layers: the body, and the head (hair, face, ears,
-    // upper neck). The head is redrawn every frame, tilted around the neck, with new eyes painted
-    // in. When the section first scrolls into view he looks up at it; once it's in view he
-    // settles and follows the cursor. A further-away cursor = a bigger head movement.
+    // ---------- portrait: head turns in (fake) 3D toward the cursor, eyes follow, he blinks ----------
+    // The cut-out portrait is split into a body layer and a head layer. The head is given an
+    // invisible rounded 3D shape (deepest at the nose and cheeks, flat at the ears and hair) and
+    // that shape is rotated left/right and up/down with WebGL, so the face shifts more than its
+    // edges, which reads as the head turning. When the section first scrolls in he looks up at
+    // it; once it's in view he follows the cursor, turning further the further away it is.
     (() => {
       const cv = document.getElementById('meetCanvas');
       if (!cv) return;
-      const ctx = cv.getContext('2d');
       const section = cv.closest('section');
       const FW = 1010, FH = 1028;                     // image size (assets/portrait-cutout.png, background removed)
       const FACE = [486, 302];                        // between the eyes
-      const PIVOT = [500, 590];                       // base of the neck: the head tilts around this point
+      const HEAD_C = [490, 340];                      // centre of the head shape
+      const HEAD_R = [245, 300, 215];                 // head shape radii: width, height, depth
+      const NOSE = [488, 372];                        // tip of the nose (sticks out a little further)
+      const PIVOT = [500, 590];                       // base of the neck
       const HEAD_SOLID = 555, HEAD_FADE = 600;        // head layer: solid above 555, fades out by 600 (inside the neck)
       const BODY_FADE = 515, BODY_SOLID = 560;        // body layer: invisible above 515, solid below 560
-      const HEAD = { rot: 3.2, x: 4, y: 3.5 };        // max head tilt (degrees) and shift (image px)
+      const TURN = { yaw: 13, pitch: 12, roll: 1.6 }; // max head turn (degrees): left/right, up/down, tilt
       const EYES = [
         { // viewer's left eye
           path: [[386, 313], [400, 296, 432, 280, 452, 314], [435, 321, 400, 321, 386, 313]],
@@ -860,19 +863,20 @@
           white: ['#896652', '#c6997c', '#caa185'], lidAt: [555, 278],
         },
       ];
-      const REST = { x: 0.75, y: -0.25 };            // where he looks when left alone (as painted)
+      const REST = { x: 0.75, y: -0.25 };            // where his eyes look when left alone (as painted)
       const UP = { x: 0, y: -1 };                     // looking up at the section as it scrolls in
-      const RANGE = { x: 11, y: 3.5 };                // how far the iris can travel (px in image)
+      const RANGE = { x: 9, y: 3.5 };                 // how far the iris can travel (px in image)
       const img = new Image();
       const S = { x: REST.x, y: REST.y, hx: 0, hy: 0, blink: 0 };   // drawn (eyes x/y, head hx/hy)
       const C = { x: REST.x, y: REST.y, hx: 0, hy: 0 };             // what the cursor / idle wants
-      let up = 1;                                                    // 1 = looking up (section just entering), 0 = settled
-      let ready = false, raf = 0, scale = 1, lastMove = -1e9, nextBlink = 0, blinkStart = -1, wander = 0;
-      let px = null, py = null;                                      // last pointer position
-      let bodyLayer, headLayer, headCv, hctx;
+      let up = 1;
+      let ready = false, raf = 0, lastMove = -1e9, nextBlink = 0, blinkStart = -1, wander = 0;
+      let px = null, py = null;
+      let bodyLayer, headLayer, headCv, hctx, R;
       const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
       const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
       const smooth = (a, b, v) => { const t = clamp((v - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+      const rad = d => d * Math.PI / 180;
 
       EYES.forEach(e => {
         const p = new Path2D(), [s, upC, lo] = e.path;
@@ -891,6 +895,107 @@
         return c;
       };
 
+      // ---- WebGL renderer: body as-is, head as a bent mesh ----
+      function makeGL() {
+        const gl = cv.getContext('webgl', { premultipliedAlpha: true, preserveDrawingBuffer: true, antialias: true });
+        if (!gl) return null;
+        const vs = `
+          attribute vec2 a_uv;
+          uniform vec2 u_size, u_c, u_nose, u_pivot;
+          uniform vec3 u_r;
+          uniform float u_yaw, u_pitch, u_roll, u_warp;
+          varying vec2 v_uv;
+          void main() {
+            v_uv = a_uv;
+            vec2 p = a_uv * u_size;
+            if (u_warp > 0.5) {
+              vec2 q = p - u_c;
+              vec2 e = q / u_r.xy;
+              float z = u_r.z * sqrt(max(0.0, 1.0 - dot(e, e)));          // rounded head
+              vec2 nd = (p - u_nose) / vec2(42.0, 70.0);
+              z += 34.0 * exp(-dot(nd, nd) * 2.0);                        // nose sticks out
+              float x1 = q.x * cos(u_yaw) + z * sin(u_yaw);                // turn left/right
+              float z1 = -q.x * sin(u_yaw) + z * cos(u_yaw);
+              float y1 = q.y * cos(u_pitch) - z1 * sin(u_pitch);           // nod up/down
+              vec2 np = u_c + vec2(x1, y1);
+              vec2 d = np - u_pivot;                                       // slight tilt around the neck
+              np = u_pivot + vec2(d.x * cos(u_roll) - d.y * sin(u_roll), d.x * sin(u_roll) + d.y * cos(u_roll));
+              float w = 1.0 - smoothstep(470.0, 565.0, p.y);              // the neck stays attached
+              p = mix(p, np, w);
+            }
+            vec2 clip = p / u_size * 2.0 - 1.0;
+            gl_Position = vec4(clip.x, -clip.y, 0.0, 1.0);
+          }`;
+        const fs = `
+          precision mediump float;
+          uniform sampler2D u_tex;
+          varying vec2 v_uv;
+          void main() { gl_FragColor = texture2D(u_tex, v_uv); }`;
+        const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw gl.getShaderInfoLog(s); return s; };
+        const pr = gl.createProgram();
+        gl.attachShader(pr, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, fs));
+        gl.linkProgram(pr); if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) throw gl.getProgramInfoLog(pr);
+        gl.useProgram(pr);
+        // a fine grid over the whole image
+        const N = 64, uv = [], idx = [];
+        for (let j = 0; j <= N; j++) for (let i = 0; i <= N; i++) uv.push(i / N, j / N);
+        for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) {
+          const a = j * (N + 1) + i, b = a + 1, c = a + N + 1, d = c + 1;
+          idx.push(a, b, c, b, d, c);
+        }
+        gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(uv), gl.STATIC_DRAW);
+        const loc = gl.getAttribLocation(pr, 'a_uv');
+        gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gl.createBuffer());
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(idx), gl.STATIC_DRAW);
+        const U = n => gl.getUniformLocation(pr, n);
+        const u = { size: U('u_size'), c: U('u_c'), nose: U('u_nose'), pivot: U('u_pivot'), r: U('u_r'), yaw: U('u_yaw'), pitch: U('u_pitch'), roll: U('u_roll'), warp: U('u_warp') };
+        gl.uniform2f(u.size, FW, FH); gl.uniform2f(u.c, ...HEAD_C); gl.uniform2f(u.nose, ...NOSE);
+        gl.uniform2f(u.pivot, ...PIVOT); gl.uniform3f(u.r, ...HEAD_R);
+        gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
+        gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+        const tex = src => {
+          const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+          if (src) gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src);
+          return t;
+        };
+        const bodyTex = tex(bodyLayer), headTex = tex(null);
+        const count = idx.length;
+        return {
+          draw() {
+            gl.viewport(0, 0, cv.width, cv.height);
+            gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
+            gl.uniform1f(u.warp, 0);
+            gl.bindTexture(gl.TEXTURE_2D, bodyTex);
+            gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, 0);
+            gl.bindTexture(gl.TEXTURE_2D, headTex);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, headCv);
+            gl.uniform1f(u.warp, 1);
+            gl.uniform1f(u.yaw, rad(S.hx * TURN.yaw));
+            gl.uniform1f(u.pitch, rad(-S.hy * TURN.pitch));
+            gl.uniform1f(u.roll, rad(S.hx * TURN.roll));
+            gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, 0);
+          },
+        };
+      }
+
+      // fallback without WebGL: just draw the picture with moving eyes
+      function make2D() {
+        const ctx = cv.getContext('2d');
+        return {
+          draw() {
+            ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, cv.width, cv.height);
+            ctx.setTransform(cv.width / FW, 0, 0, cv.height / FH, 0, 0);
+            ctx.drawImage(bodyLayer, 0, 0); ctx.drawImage(headCv, 0, 0);
+          },
+        };
+      }
+
       function build() {
         headLayer = layer([HEAD_SOLID, 1], [HEAD_FADE, 0]);
         bodyLayer = layer([BODY_FADE, 0], [BODY_SOLID, 1]);
@@ -904,13 +1009,14 @@
           const d = o.getImageData(0, 0, 1, 1).data;
           e.lid = 'rgb(' + d[0] + ',' + d[1] + ',' + d[2] + ')';
         });
+        try { R = makeGL(); } catch (err) { R = null; }
+        if (!R) R = make2D();
       }
 
       function size() {
         const r = cv.getBoundingClientRect();
         const dpr = Math.min(devicePixelRatio || 1, 2);
         cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr);
-        scale = cv.width / FW;
         if (ready) draw();
       }
 
@@ -942,14 +1048,7 @@
         hctx.clearRect(0, 0, FW, FH);                                 // head layer with fresh eyes
         hctx.drawImage(headLayer, 0, 0);
         EYES.forEach(e => drawEye(hctx, e));
-        ctx.setTransform(1, 0, 0, 1, 0, 0);                           // body, then the head tilted around the neck
-        ctx.clearRect(0, 0, cv.width, cv.height);
-        ctx.setTransform(scale, 0, 0, scale, 0, 0);
-        ctx.drawImage(bodyLayer, 0, 0);
-        ctx.translate(PIVOT[0] + S.hx * HEAD.x, PIVOT[1] + S.hy * HEAD.y);
-        ctx.rotate(S.hx * HEAD.rot * Math.PI / 180);
-        ctx.translate(-PIVOT[0], -PIVOT[1]);
-        ctx.drawImage(headCv, 0, 0);
+        R.draw();
       }
 
       // where the cursor is, relative to his face; further away = bigger reaction
@@ -959,7 +1058,7 @@
         const fx = r.left + FACE[0] / FW * r.width, fy = r.top + FACE[1] / FH * r.height;
         const dx = px - fx, dy = py - fy, d = Math.hypot(dx, dy) || 1;
         const eyeReach = Math.min(1, d / (r.width * 0.45));
-        const headReach = Math.min(1, d / (r.width * 1.1));
+        const headReach = Math.min(1, d / (r.width * 1.2));
         C.x = dx / d * eyeReach; C.y = dy / d * eyeReach;
         C.hx = dx / d * headReach; C.hy = dy / d * headReach;
       }
@@ -976,7 +1075,7 @@
         up = scrollUp();
         if (t - lastMove > 2600 && t > wander) {                       // idle: drift back to the painted pose
           const look = Math.random() < 0.6 ? 1 : -0.4;
-          C.x = REST.x * look; C.y = REST.y; C.hx = look > 0 ? 0.12 : -0.18; C.hy = 0;
+          C.x = REST.x * look; C.y = REST.y; C.hx = look > 0 ? 0.15 : -0.25; C.hy = 0;
           wander = t + 2500 + Math.random() * 2500;
         }
         const T = {
