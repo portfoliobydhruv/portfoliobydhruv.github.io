@@ -834,21 +834,26 @@
 
     // ---------- portrait: scroll-driven head animation (63 head-angle frames in assets/head) ----------
     // cNNN.jpg = colour, mNNN.jpg = transparency mask. Grid: 9 turns (-60…+60°) × 7 nods (+30…-30°).
-    // As the About strip scrolls in, he rises into view looking up, lowers his head to level,
-    // then turns sideways and slightly up (frame 25) by the time the strip is centred on screen.
-    // Neighbouring frames are cross-faded and the motion is eased, so it glides instead of stepping.
+    // The animation is tied to where his forehead is on screen:
+    //   • forehead appears at the bottom  → he's looking up, and lowers his head to level as you scroll
+    //   • strip centred on screen          → turned right 30°, chin slightly up (frame 25)
+    //   • keep scrolling down              → same direction, but gradually looking further down
+    // Neighbouring frames dissolve into each other and the scroll position is eased, so it glides.
     // (Cursor following can be layered on later.)
     (() => {
       const cv = document.getElementById('meetCanvas');
       if (!cv) return;
       const ctx = cv.getContext('2d');
       const section = cv.closest('section');
-      const PATH = [5, 14, 23, 32, 33, 24, 25];       // up 30° → 20° → 10° → level → right 15° → right 15° up 10° → right 30° up 10°
+      // up 30 → 20 → 10 → level → right 15 → right 15 up 10 → right 30 up 10 (centre) → right 30 level → down 10 → 20 → 30
+      const PATH = [5, 14, 23, 32, 33, 24, 25, 34, 43, 52, 61];
+      const CENTRE = 6;                               // index of frame 25 in PATH
+      const FOREHEAD = 0.15;                          // forehead line, as a fraction of the canvas height
       const pad = n => String(n).padStart(3, '0');
       const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
       const smooth = (a, b, v) => { const t = clamp((v - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
-      const ready = [];                               // composited frame canvases, in PATH order
-      let P = 0, target = 0, raf = 0, drawn = -1, visible = false;
+      const ready = [];
+      let pos = 0, raf = 0, drawn = '', visible = false;
 
       // colour + mask -> one transparent canvas
       function build(i) {
@@ -871,52 +876,53 @@
         });
       }
 
-      // 0 when the strip's top edge reaches the bottom of the screen, 1 when the strip is centred
-      function progress() {
-        const r = section.getBoundingClientRect();
-        return clamp((innerHeight - r.top) / ((innerHeight + r.height) / 2), 0, 1);
+      // where along PATH we should be, from where his forehead is on screen
+      function targetPos() {
+        const s = section.getBoundingClientRect(), c = cv.getBoundingClientRect();
+        const H = innerHeight;
+        const head = c.top + FOREHEAD * c.height;                       // forehead on screen now
+        const headAtCentre = (H - s.height) / 2 + (c.top - s.top) + FOREHEAD * c.height;   // …when the strip is centred
+        const span = Math.max(1, H - headAtCentre);
+        const a = (H - head) / span;                                    // 0 = forehead just appeared, 1 = strip centred
+        const b = (headAtCentre - head) / (H * 0.55);                   // after centre: 0 → 1 over about half a screen
+        return smooth(0.0, 0.5, a) * 3                                  // looking up → level
+             + smooth(0.55, 1.0, a) * 3                                 // level → right 30°, chin up
+             + smooth(0.0, 1.0, b) * (PATH.length - 1 - CENTRE);        // keep facing right, look down
       }
 
       function size() {
         const r = cv.getBoundingClientRect();
         const dpr = Math.min(devicePixelRatio || 1, 2);
         cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr);
-        drawn = -1; draw();
+        drawn = ''; draw();
       }
 
       function draw() {
         if (!ready.length || !cv.width) return;
-        // where along the head path we are (0 … PATH.length-1)
-        const down = smooth(0.12, 0.55, P) * 3;                     // looking up → level
-        const side = smooth(0.62, 1.0, P) * 3;                      // level → sideways, slightly up
-        const pos = Math.min(down + side, ready.length - 1);
-        const key = Math.round(pos * 200) + '|' + Math.round(P * 400);
+        const p = clamp(pos, 0, ready.length - 1);
+        const key = p.toFixed(3);
         if (key === drawn) return;
         drawn = key;
-        // rise into view during the first part of the scroll
-        const rise = 1 - smooth(0, 0.4, P);
-        cv.style.transform = 'translateY(' + (rise * 38).toFixed(2) + '%)';
-        const i = Math.floor(pos), t = smooth(0.3, 0.7, pos - i);   // short fades, mostly one clean frame
-        const A = ready[i], B = ready[Math.min(i + 1, ready.length - 1)];
+        const i = Math.min(Math.floor(p), ready.length - 2), t = smooth(0, 1, p - i);
         ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.globalCompositeOperation = 'copy';
+        ctx.globalCompositeOperation = 'copy';                          // dissolve: A·(1−t) + B·t
         ctx.globalAlpha = 1 - t;
-        ctx.drawImage(A, 0, 0, cv.width, cv.height);
-        if (t > 0.001 && B) {                                        // true cross-fade (premultiplied add)
+        ctx.drawImage(ready[i], 0, 0, cv.width, cv.height);
+        if (t > 0.002) {
           ctx.globalCompositeOperation = 'lighter';
           ctx.globalAlpha = t;
-          ctx.drawImage(B, 0, 0, cv.width, cv.height);
+          ctx.drawImage(ready[i + 1], 0, 0, cv.width, cv.height);
         }
         ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
       }
 
       function tick() {
         raf = 0;
-        target = progress();
-        P += (target - P) * 0.14;                                   // eased, so fast scrolling still glides
-        if (Math.abs(target - P) < 0.0005) P = target;
+        const target = targetPos();
+        pos += (target - pos) * 0.09;                                   // eased: glides even when scrolling fast
+        if (Math.abs(target - pos) < 0.002) pos = target;
         draw();
-        if (visible && P !== target) raf = requestAnimationFrame(tick);
+        if (visible && pos !== target) raf = requestAnimationFrame(tick);
       }
       const wake = () => { if (visible && ready.length && !raf) raf = requestAnimationFrame(tick); };
 
@@ -926,7 +932,7 @@
 
       Promise.all(PATH.map(build)).then(list => {
         list.forEach((f, k) => { ready[k] = f || list.find(Boolean); });
-        P = target = progress();
+        pos = targetPos();
         size(); cv.classList.add('on'); wake();
       });
     })();
