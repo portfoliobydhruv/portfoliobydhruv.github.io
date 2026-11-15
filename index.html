@@ -832,124 +832,102 @@
       addEventListener('popstate', () => close(true));   // phone back button closes the project
     })();
 
-    // ---------- portrait: 63 head-angle frames, the head turns toward the cursor ----------
-    // Frames live in assets/head: cNNN.jpg = colour, mNNN.jpg = transparency mask (white = solid).
-    // Grid: 9 turns (-60 … +60°, left → right) × 7 nods (+30 … -30°, up → down); frame 32 looks straight ahead.
-    // The further the cursor is from his face, the further he turns. When the section first
-    // scrolls in from the bottom he looks up at it, then settles and follows the cursor.
+    // ---------- portrait: scroll-driven head animation (63 head-angle frames in assets/head) ----------
+    // cNNN.jpg = colour, mNNN.jpg = transparency mask. Grid: 9 turns (-60…+60°) × 7 nods (+30…-30°).
+    // As the About strip scrolls in, he rises into view looking up, lowers his head to level,
+    // then turns sideways and slightly up (frame 25) by the time the strip is centred on screen.
+    // Neighbouring frames are cross-faded and the motion is eased, so it glides instead of stepping.
+    // (Cursor following can be layered on later.)
     (() => {
       const cv = document.getElementById('meetCanvas');
       if (!cv) return;
       const ctx = cv.getContext('2d');
       const section = cv.closest('section');
-      const YAWS = [-60, -45, -30, -15, 0, 15, 30, 45, 60];
-      const PITCHES = [30, 20, 10, 0, -10, -20, -30];
-      const NEUTRAL = 32;
-      const FACE = [0.5, 0.33];                       // where his face sits in the frame (fraction of width/height)
-      const frames = [];                              // index 1..63 -> { c: Image, m: Image, ok }
+      const PATH = [5, 14, 23, 32, 33, 24, 25];       // up 30° → 20° → 10° → level → right 15° → right 15° up 10° → right 30° up 10°
       const pad = n => String(n).padStart(3, '0');
       const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
       const smooth = (a, b, v) => { const t = clamp((v - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
-      const indexFor = (yaw, pitch) => {
-        const col = clamp(Math.round((yaw + 60) / 15), 0, 8);
-        const row = clamp(Math.round((30 - pitch) / 10), 0, 6);
-        return row * 9 + col + 1;
-      };
+      const ready = [];                               // composited frame canvases, in PATH order
+      let P = 0, target = 0, raf = 0, drawn = -1, visible = false;
 
-      const S = { yaw: 0, pitch: 0 };                 // drawn angle (eased)
-      const C = { yaw: 0, pitch: 0 };                 // what the cursor wants
-      let px = null, py = null, shown = 0, raf = 0, visible = false;
-      const work = document.createElement('canvas');  // scratch canvas to combine colour + mask
-      const wctx = work.getContext('2d');
+      // colour + mask -> one transparent canvas
+      function build(i) {
+        return Promise.all(['c', 'm'].map(k => new Promise(res => {
+          const im = new Image(); im.decoding = 'async';
+          im.onload = () => res(im); im.onerror = () => res(null);
+          im.src = 'assets/head/' + k + pad(i) + '.jpg';
+        }))).then(([c, m]) => {
+          if (!c || !m) return null;
+          const w = c.naturalWidth, h = c.naturalHeight;
+          const f = document.createElement('canvas'); f.width = w; f.height = h;
+          const x = f.getContext('2d');
+          x.drawImage(m, 0, 0);
+          const d = x.getImageData(0, 0, w, h), a = d.data;
+          for (let k = 0; k < a.length; k += 4) a[k + 3] = a[k];
+          x.putImageData(d, 0, 0);
+          x.globalCompositeOperation = 'source-in';
+          x.drawImage(c, 0, 0);
+          return f;
+        });
+      }
 
-      function load(i) {
-        if (frames[i]) return frames[i].p;
-        const f = { c: new Image(), m: new Image(), ok: false };
-        f.p = Promise.all([f.c, f.m].map((im, k) => new Promise(res => {
-          im.onload = im.onerror = res; im.decoding = 'async';
-          im.src = 'assets/head/' + (k ? 'm' : 'c') + pad(i) + '.jpg';
-        }))).then(() => { f.ok = f.c.naturalWidth > 0 && f.m.naturalWidth > 0; });
-        frames[i] = f;
-        return f.p;
+      // 0 when the strip's top edge reaches the bottom of the screen, 1 when the strip is centred
+      function progress() {
+        const r = section.getBoundingClientRect();
+        return clamp((innerHeight - r.top) / ((innerHeight + r.height) / 2), 0, 1);
       }
 
       function size() {
         const r = cv.getBoundingClientRect();
         const dpr = Math.min(devicePixelRatio || 1, 2);
         cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr);
-        work.width = cv.width; work.height = cv.height;
-        shown = 0; draw();
-      }
-
-      // nearest frame that has finished loading (falls back toward straight-ahead)
-      function pick(i) {
-        if (frames[i] && frames[i].ok) return i;
-        let best = 0, bd = 1e9;
-        const r0 = Math.floor((i - 1) / 9), c0 = (i - 1) % 9;
-        frames.forEach((f, j) => {
-          if (!f || !f.ok) return;
-          const d = Math.abs(Math.floor((j - 1) / 9) - r0) + Math.abs((j - 1) % 9 - c0);
-          if (d < bd) { bd = d; best = j; }
-        });
-        return best;
+        drawn = -1; draw();
       }
 
       function draw() {
-        const i = pick(indexFor(S.yaw, S.pitch));
-        if (!i || i === shown || !cv.width) return;
-        const f = frames[i];
-        wctx.globalCompositeOperation = 'copy';
-        wctx.drawImage(f.m, 0, 0, work.width, work.height);
-        // turn the white-on-black mask into alpha
-        const im = wctx.getImageData(0, 0, work.width, work.height), d = im.data;
-        for (let k = 0; k < d.length; k += 4) { d[k + 3] = d[k]; }
-        wctx.putImageData(im, 0, 0);
-        wctx.globalCompositeOperation = 'source-in';
-        wctx.drawImage(f.c, 0, 0, work.width, work.height);
+        if (!ready.length || !cv.width) return;
+        // where along the head path we are (0 … PATH.length-1)
+        const down = smooth(0.12, 0.55, P) * 3;                     // looking up → level
+        const side = smooth(0.62, 1.0, P) * 3;                      // level → sideways, slightly up
+        const pos = Math.min(down + side, ready.length - 1);
+        const key = Math.round(pos * 200) + '|' + Math.round(P * 400);
+        if (key === drawn) return;
+        drawn = key;
+        // rise into view during the first part of the scroll
+        const rise = 1 - smooth(0, 0.4, P);
+        cv.style.transform = 'translateY(' + (rise * 38).toFixed(2) + '%)';
+        const i = Math.floor(pos), t = smooth(0.3, 0.7, pos - i);   // short fades, mostly one clean frame
+        const A = ready[i], B = ready[Math.min(i + 1, ready.length - 1)];
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.globalCompositeOperation = 'copy';
-        ctx.drawImage(work, 0, 0);
-        shown = i;
-      }
-
-      // where the cursor is relative to his face; further away = bigger turn
-      function aim() {
-        if (px === null) return;
-        const r = cv.getBoundingClientRect();
-        const fx = r.left + FACE[0] * r.width, fy = r.top + FACE[1] * r.height;
-        C.yaw = clamp((px - fx) / (innerWidth * 0.42), -1, 1) * 60;
-        C.pitch = -clamp((py - fy) / (innerHeight * 0.5), -1, 1) * 30;
-      }
-
-      // 1 while the section is just peeking in from the bottom, easing to 0 once it's well in view
-      function lookUp() {
-        const r = section.getBoundingClientRect();
-        const p = (innerHeight - r.top) / (innerHeight * 0.85);
-        return 1 - smooth(0.35, 1, p);
+        ctx.globalAlpha = 1 - t;
+        ctx.drawImage(A, 0, 0, cv.width, cv.height);
+        if (t > 0.001 && B) {                                        // true cross-fade (premultiplied add)
+          ctx.globalCompositeOperation = 'lighter';
+          ctx.globalAlpha = t;
+          ctx.drawImage(B, 0, 0, cv.width, cv.height);
+        }
+        ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
       }
 
       function tick() {
         raf = 0;
-        const up = lookUp();
-        const ty = C.yaw * (1 - up), tp = C.pitch + (30 - C.pitch) * up;
-        S.yaw += (ty - S.yaw) * 0.12; S.pitch += (tp - S.pitch) * 0.12;
+        target = progress();
+        P += (target - P) * 0.14;                                   // eased, so fast scrolling still glides
+        if (Math.abs(target - P) < 0.0005) P = target;
         draw();
-        if (visible && (Math.abs(ty - S.yaw) > 0.3 || Math.abs(tp - S.pitch) > 0.3)) raf = requestAnimationFrame(tick);
+        if (visible && P !== target) raf = requestAnimationFrame(tick);
       }
-      const wake = () => { if (visible && !raf) raf = requestAnimationFrame(tick); };
+      const wake = () => { if (visible && ready.length && !raf) raf = requestAnimationFrame(tick); };
 
-      new IntersectionObserver(([en]) => { visible = en.isIntersecting; wake(); }, { rootMargin: '200px 0px' }).observe(cv);
-      addEventListener('pointermove', ev => { px = ev.clientX; py = ev.clientY; aim(); wake(); }, { passive: true });
-      addEventListener('scroll', () => { aim(); wake(); }, { passive: true });
+      new IntersectionObserver(([en]) => { visible = en.isIntersecting; wake(); }, { rootMargin: '100px 0px' }).observe(section);
+      addEventListener('scroll', wake, { passive: true });
       new ResizeObserver(size).observe(cv);
 
-      // straight-ahead and the looking-up frames first, then everything else in the background
-      const first = [NEUTRAL, indexFor(0, 30), indexFor(0, 20), indexFor(0, 10)];
-      Promise.all(first.map(load)).then(() => {
-        const up = lookUp(); S.pitch = 30 * up;
+      Promise.all(PATH.map(build)).then(list => {
+        list.forEach((f, k) => { ready[k] = f || list.find(Boolean); });
+        P = target = progress();
         size(); cv.classList.add('on'); wake();
-        let n = 1;
-        const next = () => { while (n <= 63 && frames[n]) n++; if (n > 63) return; load(n).then(() => { wake(); next(); }); };
-        next(); next(); next();                       // three downloads at a time
       });
     })();
 
