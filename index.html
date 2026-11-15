@@ -845,9 +845,11 @@
       if (!cv) return;
       const ctx = cv.getContext('2d');
       const section = cv.closest('section');
-      // up 30 → up 20 → up 10 → right 15 up 10 → right 30 up 10 (centre) → right 30 level → down 10 → 20 → 30
-      const PATH = [5, 14, 23, 24, 25, 34, 43, 52, 61];
-      const CENTRE = 4;                               // index of frame 25 in PATH
+      // 101–108 are the in-between frames (5° nod / 7.5° turn steps)
+      // up 30 → 25 → 20 → 15 → 10 → right 7.5 → 15 → 22.5 → 30 (centre, up 10) → up 5 → level → down 5 … down 30
+      const PATH = [5, 101, 14, 102, 23, 103, 24, 104, 25, 105, 34, 106, 43, 107, 52, 108, 61];
+      const CENTRE = 8;                               // index of frame 25 in PATH
+      const NOD = 4, TURN = 4;                        // steps: looking up → slightly up, then slightly up → turned
       const FOREHEAD = 0.15;                          // forehead line, as a fraction of the canvas height
       const pad = n => String(n).padStart(3, '0');
       const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -885,8 +887,8 @@
         const span = Math.max(1, H - headAtCentre);
         const a = (H - head) / span;                                    // 0 = forehead just appeared, 1 = strip centred
         const b = (headAtCentre - head) / (H * 0.55);                   // after centre: 0 → 1 over about half a screen
-        return smooth(0.22, 0.58, a) * 2                                // looking up → slightly up (starts a bit later)
-             + smooth(0.64, 1.0, a) * 2                                 // slightly up → turned right 30°
+        return smooth(0.22, 0.58, a) * NOD                              // looking up → slightly up (starts a bit later)
+             + smooth(0.64, 1.0, a) * TURN                              // slightly up → turned right 30°
              + smooth(0.0, 1.0, b) * (PATH.length - 1 - CENTRE);        // keep facing right, look down
       }
 
