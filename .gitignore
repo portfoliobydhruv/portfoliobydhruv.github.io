@@ -5,3 +5,6 @@ Thumbs.db
 
 # original full-size frame pack (too big for the site; web versions live in assets/head)
 Character_63_Head_Frames.zip
+
+# original full-size cover (web copy lives in thumbnails/)
+thumbnails bb.jpg

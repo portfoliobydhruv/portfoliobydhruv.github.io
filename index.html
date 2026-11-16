@@ -703,7 +703,7 @@
     <div class="row">
       <h3>Internship Projects <span class="count">1 project</span></h3>
       <div class="cards">
-        <a class="card empty named" href="#"><div class="thumb"><span>Coming soon</span></div><div class="title">Bacca Bucci Internship Report</div><div class="sub">Industry Internship</div></a>
+        <a class="card" href="#" data-soon><div class="thumb"><img src="thumbnails/Bacca%20Bucci%20-%20Internship%20Report.jpg" alt="Bacca Bucci internship report cover" loading="lazy"></div><div class="title">Bacca Bucci Internship Report</div><div class="sub">Industry Internship</div></a>
       </div>
     </div>
 
@@ -931,7 +931,7 @@
     })();
 
     // empty slots shouldn't jump the page to the top when clicked
-    document.querySelectorAll('.card.empty, .fcard.empty').forEach(c =>
+    document.querySelectorAll('.card.empty, .fcard.empty, [data-soon]').forEach(c =>      // [data-soon] = has a cover, PDF not added yet
       c.addEventListener('click', e => e.preventDefault()));
 
     // rows with more cards than fit get ‹ › arrows (desktop)
