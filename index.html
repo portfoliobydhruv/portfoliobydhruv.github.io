@@ -215,6 +215,7 @@
     }
     @keyframes vspin { to { transform: rotate(360deg); } }
     .viewer-strip canvas { display: block; width: 100%; height: 100%; }
+    .viewer-slice { display: block; width: 100%; height: auto; background: #f3f3f3; }
     .viewer-status { color: #bbb; text-align: center; font-size: 14px; padding: 60px 0; }
     .viewer-status a { color: #fff; }
     /* booklet mode: pages turn like a real book (cover alone, then two-page spreads) */
@@ -724,8 +725,8 @@
       <h3>Brand, Graphic &amp; Packaging <span class="count">3 projects</span></h3>
       <div class="cards">
         <a class="card empty named" href="#"><div class="thumb"><span>Coming soon</span></div><div class="title">Pravah - Craft Based Packaging</div><div class="sub">Packaging Design</div></a>
-        <a class="card empty named" href="#"><div class="thumb"><span>Coming soon</span></div><div class="title">Gokini - Brand Identity</div><div class="sub">Branding &amp; Identity Design</div></a>
-        <a class="card empty named" href="#"><div class="thumb"><span>Coming soon</span></div><div class="title">Kali - Visual Identity</div><div class="sub">Logo Design</div></a>
+        <a class="card" href="Gokini.pdf" data-strips="books/gokini" data-count="13" data-last="1384"><div class="thumb"><img src="thumbnails/Gokini%20-%20Brand%20Identity.jpg" alt="Gokini brand identity" loading="lazy"></div><div class="title">Gokini - Brand Identity</div><div class="sub">Branding &amp; Identity Design</div></a>
+        <a class="card" href="Kali.pdf" data-strips="books/kali" data-count="5" data-last="1506"><div class="thumb"><img src="thumbnails/Kali%20-%20Visual%20Identity.jpg" alt="Kali visual identity" loading="lazy"></div><div class="title">Kali - Visual Identity</div><div class="sub">Logo Design</div></a>
       </div>
     </div>
 
@@ -983,6 +984,27 @@
         const t = a.querySelector('.title, h3');
         open(a.dataset.pdf, t ? t.childNodes[0].textContent.trim() : 'Project');
       }));
+      // ---------- long one-page designs, pre-cut into image slices (opens instantly, no PDF rendering) ----------
+      // <a data-strips="books/name" data-count="6" data-last="1491"> → books/name/s01.jpg … s06.jpg
+      // every slice is 1600×1600 except the last, which is 1600×data-last
+      function openStrips(dir, count, last, title) {
+        ++session;
+        show(title);
+        let html = '<div class="viewer-page">';
+        for (let n = 1; n <= count; n++) {
+          const h = n === count ? last : 1600;
+          html += '<img class="viewer-slice" src="' + dir + '/s' + String(n).padStart(2, '0') + '.jpg" width="1600" height="' + h +
+                  '" alt="' + title.replace(/"/g, '') + ', part ' + n + '"' + (n > 2 ? ' loading="lazy"' : '') + ' decoding="async">';
+        }
+        body.innerHTML = html + '</div>';
+        body.scrollTop = 0;
+      }
+      document.querySelectorAll('[data-strips]').forEach(a => a.addEventListener('click', e => {
+        e.preventDefault();
+        const t = a.querySelector('.title, h3');
+        openStrips(a.dataset.strips, +a.dataset.count, +a.dataset.last, t ? t.childNodes[0].textContent.trim() : 'Project');
+      }));
+
       document.querySelectorAll('[data-book]').forEach(a => a.addEventListener('click', e => {
         e.preventDefault();
         const t = a.querySelector('.title, h3');
