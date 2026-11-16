@@ -217,6 +217,33 @@
     .viewer-strip canvas { display: block; width: 100%; height: 100%; }
     .viewer-status { color: #bbb; text-align: center; font-size: 14px; padding: 60px 0; }
     .viewer-status a { color: #fff; }
+    /* booklet mode: pages turn like a real book (cover alone, then two-page spreads) */
+    .viewer-body.book-mode {
+      overflow: hidden; padding: 20px 16px 16px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+    }
+    .book-stage { display: flex; align-items: center; justify-content: center; width: 100%; flex: 1; min-height: 0; }
+    .book-controls { display: flex; align-items: center; gap: 18px; }
+    .book-count { min-width: 150px; text-align: center; }
+    .viewer.book-open { background: #141414; }
+    .book { filter: drop-shadow(0 18px 40px rgba(0,0,0,.45)); }
+    .book-page { background: #fff; overflow: hidden; }
+    .book-page img { display: block; width: 100%; height: 100%; object-fit: cover; user-select: none; -webkit-user-drag: none; }
+    .book-page:not(.loaded) { background: #f3f3f3; }
+    .book-nav {
+      flex: none; width: 46px; height: 46px; border-radius: 50%; border: 0; cursor: pointer;
+      background: rgba(255,255,255,.12); color: #fff; font: 600 22px/1 "Montserrat", sans-serif;
+      display: grid; place-items: center; transition: background .2s ease, opacity .2s ease;
+    }
+    .book-nav:hover { background: rgba(255,255,255,.25); }
+    .book-nav:disabled { opacity: .25; cursor: default; background: rgba(255,255,255,.12); }
+    .book-count { color: #bbb; font-size: 13px; letter-spacing: .04em; min-height: 1em; }
+    .book-hint { color: #777; font-size: 12px; }
+    @media (max-width: 820px) {
+      .viewer-body.book-mode { padding: 12px 8px; gap: 10px; }
+      .book-controls { gap: 10px; }
+      .book-count { min-width: 120px; }
+    }
     @media (max-width: 820px) {
       .viewer-bar { padding: 10px 14px; }
       .viewer-body { padding: 12px 8px 40px; }
@@ -702,7 +729,7 @@
     <div class="row">
       <h3>Internship Projects <span class="count">1 project</span></h3>
       <div class="cards">
-        <a class="card" href="#" data-soon><div class="thumb"><img src="thumbnails/Bacca%20Bucci%20-%20Internship%20Report.jpg" alt="Bacca Bucci internship report cover" loading="lazy"></div><div class="title">Bacca Bucci Internship Report</div><div class="sub">Industry Internship</div></a>
+        <a class="card" href="#" data-book="books/bacca-bucci" data-pages="68"><div class="thumb"><img src="thumbnails/Bacca%20Bucci%20-%20Internship%20Report.jpg" alt="Bacca Bucci internship report cover" loading="lazy"></div><div class="title">Bacca Bucci Internship Report</div><div class="sub">Industry Internship</div></a>
       </div>
     </div>
 
@@ -742,14 +769,132 @@
 
       const status = html => { body.innerHTML = '<p class="viewer-status">' + html + '</p>'; };
 
-      async function open(url, title) {
-        const my = ++session;
+      function show(title) {
         lastFocus = document.activeElement;
         titleEl.textContent = title;
         viewer.hidden = false;
         document.documentElement.style.overflow = 'hidden';
         viewer.querySelector('.viewer-close').focus();
         if (!pushed) { history.pushState({ viewer: true }, ''); pushed = true; }
+      }
+
+      // ---------- booklet: page images in a folder, turned like a real book ----------
+      // <a data-book="books/name" data-pages="68"> → books/name/p001.jpg … p068.jpg
+      // page 1 is the front cover on its own, then two-page spreads (2–3, 4–5 …), last page is the back cover
+      const FLIP = 'https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js';
+      let flipLib, book = null, bookArgs = null, resizeTimer = 0;
+      const loadFlip = () => flipLib || (flipLib = new Promise((res, rej) => {
+        const s = document.createElement('script');
+        s.src = FLIP;
+        s.onload = () => res(window.St);
+        s.onerror = () => { flipLib = null; rej(); };
+        document.head.appendChild(s);
+      }));
+
+      async function openBook(dir, count, title) {
+        const my = ++session;
+        show(title);
+        status('Opening book…');
+        try {
+          const St = await loadFlip();
+          if (my !== session) return;
+          bookArgs = { St, dir, count };
+          buildBook(0);
+        } catch (err) {
+          if (my === session) status('Couldn’t open the book. Please check your connection and try again.');
+        }
+      }
+
+      function buildBook(start) {
+        const { St, dir, count } = bookArgs;
+        const narrow = matchMedia('(max-width: 820px)').matches;
+        body.classList.add('book-mode');
+        viewer.classList.add('book-open');
+        body.innerHTML =
+          '<div class="book-stage"><div class="book"></div></div>' +
+          '<div class="book-controls"><button class="book-nav" type="button" aria-label="Previous page">‹</button>' +
+          '<span class="book-count" aria-live="polite"></span>' +
+          '<button class="book-nav" type="button" aria-label="Next page">›</button></div>' +
+          '<p class="book-hint">' + (narrow ? 'Swipe or tap the arrows to turn pages' : 'Drag a page corner, click a page or use the arrow keys') + '</p>';
+        const stage = body.querySelector('.book-stage'), el = body.querySelector('.book');
+        const [prev, next] = body.querySelectorAll('.book-nav'), countEl = body.querySelector('.book-count');
+
+        // page size: A4 ratio, as big as fits — one page at a time on narrow screens, spreads otherwise
+        const R = 1123 / 794;
+        const single = stage.clientWidth < 700;
+        let pw = single ? stage.clientWidth : stage.clientWidth / 2, ph = pw * R;
+        if (ph > stage.clientHeight) { ph = stage.clientHeight; pw = ph / R; }
+        pw = Math.floor(pw); ph = Math.floor(ph);
+        el.style.width = (single ? pw : pw * 2) + 'px';
+        el.style.height = ph + 'px';
+
+        for (let n = 1; n <= count; n++) {
+          const p = document.createElement('div');
+          p.className = 'book-page';
+          if (n === 1 || n === count) p.dataset.density = 'hard';     // stiff front and back covers
+          const img = document.createElement('img');
+          img.alt = 'Page ' + n; img.decoding = 'async'; img.draggable = false;
+          img.dataset.src = dir + '/p' + String(n).padStart(3, '0') + '.jpg';
+          img.onload = () => p.classList.add('loaded');
+          p.appendChild(img);
+          el.appendChild(p);
+        }
+        const imgs = [...el.querySelectorAll('img')];
+        // only fetch the pages around the one that's open (68 pages would be ~12 MB at once)
+        const fetchNear = i => { for (let k = Math.max(0, i - 3); k <= Math.min(count - 1, i + 6); k++) if (!imgs[k].src) imgs[k].src = imgs[k].dataset.src; };
+        fetchNear(start);
+
+        book = new St.PageFlip(el, {
+          width: pw, height: ph, size: 'fixed',
+          showCover: true, usePortrait: single, startPage: start,
+          flippingTime: 800, maxShadowOpacity: 0.4, mobileScrollSupport: false, showPageCorners: !single
+        });
+        book.loadFromHTML(el.querySelectorAll('.book-page'));
+
+        const label = () => {
+          let i = book.getCurrentPageIndex();
+          fetchNear(i);
+          const last = count - 1;
+          let txt;
+          if (i === 0) txt = 'Front cover';
+          else if (i === last && (single || count % 2 === 0)) txt = 'Back cover';
+          else if (single) txt = 'Page ' + (i + 1) + ' of ' + count;
+          else { if (i % 2 === 0) i--; txt = 'Pages ' + (i + 1) + '–' + Math.min(i + 2, count) + ' of ' + count; }
+          countEl.textContent = txt;
+          const at = book.getCurrentPageIndex();
+          prev.disabled = at <= 0;
+          next.disabled = at >= last;
+        };
+        book.on('flip', label);
+        label();
+        prev.addEventListener('click', () => book && book.flipPrev());
+        next.addEventListener('click', () => book && book.flipNext());
+      }
+
+      function destroyBook() {
+        if (book) { try { book.destroy(); } catch (e) {} book = null; }
+        body.classList.remove('book-mode');
+        viewer.classList.remove('book-open');
+      }
+
+      addEventListener('resize', () => {
+        if (!book) return;
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+          if (!book) return;
+          const at = book.getCurrentPageIndex();
+          destroyBook(); buildBook(at);
+        }, 250);
+      });
+      addEventListener('keydown', e => {
+        if (!book || viewer.hidden) return;
+        if (e.key === 'ArrowRight') book.flipNext();
+        if (e.key === 'ArrowLeft') book.flipPrev();
+      });
+
+      async function open(url, title) {
+        const my = ++session;
+        show(title);
         status('Loading project…');
         try {
           const pdfjs = await loadLib();
@@ -815,6 +960,7 @@
         document.documentElement.style.overflow = '';
         if (observer) observer.disconnect();
         if (doc) { doc.destroy(); doc = null; }
+        destroyBook();
         body.innerHTML = '';
         if (pushed) { pushed = false; if (!fromHistory) history.back(); }
         if (lastFocus) lastFocus.focus({ preventScroll: true });
@@ -824,6 +970,11 @@
         e.preventDefault();
         const t = a.querySelector('.title, h3');
         open(a.dataset.pdf, t ? t.childNodes[0].textContent.trim() : 'Project');
+      }));
+      document.querySelectorAll('[data-book]').forEach(a => a.addEventListener('click', e => {
+        e.preventDefault();
+        const t = a.querySelector('.title, h3');
+        openBook(a.dataset.book, +a.dataset.pages, t ? t.childNodes[0].textContent.trim() : 'Project');
       }));
       viewer.querySelector('.viewer-close').addEventListener('click', () => close(false));
       addEventListener('keydown', e => { if (e.key === 'Escape') close(false); });
