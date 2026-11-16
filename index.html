@@ -244,6 +244,17 @@
       .book-controls { gap: 10px; }
       .book-count { min-width: 120px; }
     }
+    /* phone held sideways: arrows go beside the book so the spread gets the full height */
+    @media (max-height: 520px) and (orientation: landscape) {
+      .viewer.book-open .viewer-bar { padding: 6px 12px; }
+      .viewer.book-open .viewer-close { width: 30px; height: 30px; font-size: 17px; }
+      .viewer-body.book-mode { flex-direction: row; padding: 6px 8px; gap: 8px; }
+      .viewer-body.book-mode .book-controls { display: contents; }
+      .viewer-body.book-mode .book-nav:first-child { order: -1; }
+      .viewer-body.book-mode .book-stage { order: 0; height: 100%; }
+      .viewer-body.book-mode .book-nav:last-child { order: 1; }
+      .viewer-body.book-mode .book-count, .viewer-body.book-mode .book-hint { display: none; }
+    }
     @media (max-width: 820px) {
       .viewer-bar { padding: 10px 14px; }
       .viewer-body { padding: 12px 8px 40px; }
@@ -815,13 +826,14 @@
           '<div class="book-controls"><button class="book-nav" type="button" aria-label="Previous page">‹</button>' +
           '<span class="book-count" aria-live="polite"></span>' +
           '<button class="book-nav" type="button" aria-label="Next page">›</button></div>' +
-          '<p class="book-hint">' + (narrow ? 'Swipe or tap the arrows to turn pages' : 'Drag a page corner, click a page or use the arrow keys') + '</p>';
+          '<p class="book-hint">' + (narrow ? 'Swipe or tap the arrows to turn pages · turn your phone sideways for a bigger view' : 'Drag a page corner, click a page or use the arrow keys') + '</p>';
         const stage = body.querySelector('.book-stage'), el = body.querySelector('.book');
         const [prev, next] = body.querySelectorAll('.book-nav'), countEl = body.querySelector('.book-count');
 
-        // page size: A4 ratio, as big as fits — one page at a time on narrow screens, spreads otherwise
+        // page size: A4 ratio, as big as fits. Always two-page spreads (even on phones),
+        // because the booklet is designed as spreads and single pages would split them
         const R = 1123 / 794;
-        const single = stage.clientWidth < 700;
+        const single = false;
         let pw = single ? stage.clientWidth : stage.clientWidth / 2, ph = pw * R;
         if (ph > stage.clientHeight) { ph = stage.clientHeight; pw = ph / R; }
         pw = Math.floor(pw); ph = Math.floor(ph);
