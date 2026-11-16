@@ -572,7 +572,8 @@
 
     @media (max-width: 820px) {
       .projects { padding: 0 52px 90px 20px; }
-      .cards { grid-auto-columns: 78%; gap: 16px; }
+      /* card rows run to the right screen edge; the side menu floats over them (no white strip) */
+      .cards { grid-auto-columns: 78%; gap: 16px; margin-right: -52px; padding-right: 52px; scroll-padding-left: 4px; }
       .row h3 { font-size: 18px; }
       .row-arrow { display: none; }   /* phones just swipe */
     }
