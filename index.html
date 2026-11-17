@@ -1046,17 +1046,17 @@
       const EYES = [
         { // viewer's left eye
           path: [[386, 313], [400, 296, 432, 280, 452, 314], [435, 321, 400, 321, 386, 313]],
-          c: [419, 306], ir: 15.3, pr: 6.7, top: 291, bot: 321,
+          c: [419, 306], ir: 12.6, pr: 5.6, top: 291, bot: 321,
           white: ['#7c5f4f', '#ab8a79', '#bd9885'], lidAt: [420, 286],
         },
         { // viewer's right eye
           path: [[517, 306], [530, 284, 566, 272, 588, 299], [572, 310, 535, 311, 517, 306]],
-          c: [552, 296], ir: 14.6, pr: 6.4, top: 283, bot: 309,
+          c: [552, 296], ir: 12.0, pr: 5.4, top: 283, bot: 309,
           white: ['#896652', '#c6997c', '#caa185'], lidAt: [555, 278],
         },
       ];
       const REST = { x: 0.75, y: -0.25 };            // where he looks when left alone (as painted)
-      const RANGE = { x: 11, y: 3.5 };                // how far the iris can travel (px in image)
+      const RANGE = { x: 13, y: 11 };            // how far the iris can travel (px in image): all round, not just sideways
       const img = new Image();
       const S = { x: REST.x, y: REST.y, blink: 0 };  // drawn
       const T = { x: REST.x, y: REST.y };            // wanted
