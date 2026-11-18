@@ -243,13 +243,18 @@
     .connect-links a:hover svg, .connect-links a:focus-visible svg { color: #000; transform: scale(1.1); }
     .connect-links a:hover span, .connect-links a:focus-visible span { text-decoration: underline; text-underline-offset: 3px; }
 
-    /* phones/tablets: artwork on top, then heading, form and contacts stacked */
+    .connect-word, .connect-lens { display: none; }     /* desktop uses the one combined artwork */
+
+    /* phones/tablets: "Connect" centred, heading with the magnifier beside it, then form and contacts */
     @media (max-width: 820px) {
-      .connect { padding: 0 52px 40px 20px; }          /* right room so the side menu doesn't cover the fields */
-      .connect-art { width: calc(100% + 72px); max-width: none; margin: 0 -52px 0 -20px; }
+      .connect { padding: 0 52px 22px 20px; }          /* right room so the side menu doesn't cover the fields; ends right after LinkedIn */
+      .connect-art { display: none; }
+      .connect-word { display: block; width: min(86%, 380px); height: auto; margin: 28px auto 6px; position: relative; left: 16px; }
+      .connect-intro { display: flex; align-items: center; justify-content: space-between; gap: 4px; margin: 0 -52px 22px 0; }
+      .connect-lens { display: block; width: 51%; max-width: 300px; height: auto; flex: none; }
       .cf-tiles { max-width: 300px; }
       .connect-title, .connect-form, .connect-links { position: static; }
-      .connect-title { font-size: 34px; margin: 10px 0 26px; }
+      .connect-title { font-size: clamp(24px, 7.6vw, 40px); margin: 0; flex: 1; min-width: 0; white-space: nowrap; }
       .connect-form { width: auto; display: block; }
       .cf-divider { display: none; }
       .cf-field { margin-bottom: 18px; }
@@ -851,7 +856,12 @@
   <section class="connect" id="connect">
     <img class="connect-art" src="assets/connect-bg.jpg" width="2400" height="1276" loading="lazy" alt="Connect: a hand holding a magnifying glass over a portrait of Aditya">
 
-    <h2 class="connect-title">Let’s Work.<span>Together.</span></h2>
+    <!-- phones only: the artwork split up (lettering centred, magnifier beside the heading) -->
+    <img class="connect-word" src="assets/connect-word.jpg" width="700" height="255" loading="lazy" alt="Connect">
+    <div class="connect-intro">
+      <h2 class="connect-title">Let’s Work.<span>Together.</span></h2>
+      <img class="connect-lens" src="assets/connect-lens.jpg" width="925" height="836" loading="lazy" alt="A hand holding a magnifying glass over a portrait of Aditya">
+    </div>
 
     <form class="connect-form" id="connectForm" novalidate>
       <div class="cf-col">
