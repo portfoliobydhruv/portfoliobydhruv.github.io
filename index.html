@@ -230,6 +230,10 @@
       transition: background .2s ease;
     }
     .cf-send:hover, .cf-send:focus-visible { background: #333; outline: none; }
+    .cf-send:disabled { background: #777; cursor: wait; }
+    .cf-honey { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }   /* spam trap, people never see it */
+    .cf-note.ok { color: #2e7d32; }
+    .cf-note.err { color: #c62828; }
     .cf-note { min-height: 1em; margin-top: .6vw; font-size: max(.6vw, 11px); color: #555; }
     .connect-links {
       position: absolute; left: 51.65vw; top: 40.7vw;
@@ -884,6 +888,7 @@
             <label class="cf-tile"><input type="checkbox" name="type" value="Other"><span class="cf-box" aria-hidden="true"></span><span class="cf-cap">Other</span></label>
           </div>
         </fieldset>
+        <input type="text" name="_honey" class="cf-honey" tabindex="-1" autocomplete="off" aria-hidden="true">
         <button class="cf-send" type="submit">Send message</button>
         <p class="cf-note" id="cfNote" role="status"></p>
       </div>
@@ -1409,32 +1414,68 @@
     document.querySelectorAll('.card.empty, .fcard.empty, [data-soon]').forEach(c =>      // [data-soon] = has a cover, PDF not added yet
       c.addEventListener('click', e => e.preventDefault()));
 
-    // ---------- connect form: the site has no server, so "Send message" opens the visitor's
-    // email app with everything filled in, addressed to Aditya ----------
+    // ---------- connect form: "Send message" emails the details straight to Aditya's inbox ----------
+    // Uses FormSubmit (formsubmit.co), a free form-to-email service, because the site has no server.
+    // The very first message triggers a one-time "Activate form" email to the inbox; after that, every message arrives.
+    // If the service can't be reached, the visitor's own email app opens with everything filled in instead.
     (() => {
       const form = document.getElementById('connectForm');
       if (!form) return;
       const note = document.getElementById('cfNote');
+      const btn = form.querySelector('.cf-send');
       const TO = 'aditya2023dhruv@gmail.com';
+      const ENDPOINT = 'https://formsubmit.co/ajax/' + TO;
+      const say = (text, kind) => { note.textContent = text; note.className = 'cf-note' + (kind ? ' ' + kind : ''); };
       form.addEventListener('input', e => e.target.closest('.cf-field')?.classList.remove('bad'));
-      form.addEventListener('submit', e => {
+      form.addEventListener('submit', async e => {
         e.preventDefault();
         const f = form.elements;
         const name = f.name.value.trim(), msg = f.message.value.trim();
         let ok = true;
         [[f.name, name], [f.message, msg]].forEach(([el, v]) => { if (!v) { el.closest('.cf-field').classList.add('bad'); ok = false; } });
-        if (!ok) { note.textContent = 'Please add your name and a message.'; (name ? f.message : f.name).focus(); return; }
+        if (!ok) { say('Please add your name and a message.', 'err'); (name ? f.message : f.name).focus(); return; }
+        if (f._honey.value) return;                                        // a bot filled the hidden trap
         const types = [...form.querySelectorAll('input[name="type"]:checked')].map(c => c.value);
-        const details = [
-          'Name: ' + name,
-          f.company.value.trim() && 'Company: ' + f.company.value.trim(),
-          f.budget.value.trim() && 'Budget: ' + f.budget.value.trim(),
-          types.length && 'Project type: ' + types.join(', '),
-        ].filter(Boolean);
-        const lines = [msg, '', '—', ...details];
-        const subject = 'Project enquiry from ' + name + (types.length ? ' (' + types.join(', ') + ')' : '');
-        location.href = 'mailto:' + TO + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(lines.join('\n'));
-        note.textContent = 'Opening your email app… if nothing opens, write to ' + TO;
+        const company = f.company.value.trim(), budget = f.budget.value.trim();
+        const subject = 'Portfolio enquiry from ' + name + (types.length ? ' (' + types.join(', ') + ')' : '');
+        const data = {
+          Name: name,
+          'Company name': company || '—',
+          Budget: budget || '—',
+          'Project type': types.join(', ') || '—',
+          Message: msg,
+          _subject: subject,
+          _template: 'table',
+          _captcha: 'false',
+        };
+        btn.disabled = true; btn.textContent = 'Sending…'; say('');
+        try {
+          const res = await fetch(ENDPOINT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body: JSON.stringify(data),
+          });
+          const out = await res.json().catch(() => ({}));
+          if (res.ok && String(out.success) === 'true') {
+            form.reset();
+            say('Thanks, ' + name.split(' ')[0] + '! Your message has been sent. I’ll get back to you soon.', 'ok');
+          } else if (/activat/i.test(out.message || '')) {
+            // first ever message: FormSubmit has emailed Aditya an "Activate form" link
+            say('Almost there: this form is being activated. Please try again in a little while.', 'err');
+            return;
+          } else {
+            throw new Error(out.message || 'Send failed');
+          }
+        } catch (err) {
+          // fall back to the visitor's email app so the message is never lost
+          const details = ['Name: ' + name, company && 'Company: ' + company, budget && 'Budget: ' + budget,
+                           types.length && 'Project type: ' + types.join(', ')].filter(Boolean);
+          const body = [msg, '', '—', ...details].join('\n');
+          say('Couldn’t send it from here, so your email app is opening with the message ready. If nothing opens, write to ' + TO, 'err');
+          location.href = 'mailto:' + TO + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+        } finally {
+          btn.disabled = false; btn.textContent = 'Send message';
+        }
       });
     })();
 
