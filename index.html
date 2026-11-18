@@ -7,7 +7,7 @@
   <meta name="description" content="Aditya Dhruv — UI/UX & Graphics designer. Communication design, graphic design and UI/UX.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
       --ink: #1d1d1d;
@@ -177,9 +177,94 @@
       .sidenav a svg { width: 17px; height: 17px; }
     }
 
-    /* ---------- CONNECT (last section: full-width image, same width as the About strip) ---------- */
-    .connect { line-height: 0; }
-    .connect img { display: block; width: 100%; height: auto; }
+    /* ---------- CONNECT (last section) ----------
+       Positions come from the 2000 × 1063 design: 1 design px = 0.05vw, so it keeps its proportions at any desktop width. */
+    .connect { position: relative; overflow: hidden; background: #fff; }
+    .connect-art { display: block; width: 100%; height: auto; }
+    .connect .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    .connect-title {
+      position: absolute; left: 6.1vw; top: 25.4vw;
+      font-weight: 800; font-size: 2.95vw; line-height: .78; letter-spacing: -.055em; color: #000;
+    }
+    .connect-title span { display: block; color: #555; }
+    .connect-form {
+      position: absolute; left: 6.2vw; top: 31.45vw; width: 40.8vw;
+      display: grid; grid-template-columns: 15.7vw 1fr 15.7vw; column-gap: 0;
+    }
+    .cf-col { display: flex; flex-direction: column; }
+    .cf-divider { width: 1px; background: #bbb; justify-self: center; margin-top: .2vw; height: 16.6vw; }
+    .cf-field { display: block; border: 0; padding: 0; margin: 0 0 1.25vw; min-width: 0; }
+    .cf-label {
+      display: block; padding: 0; margin-bottom: .45vw; line-height: 1.2;
+      font-weight: 700; font-size: max(.66vw, 10px); letter-spacing: .02em; text-transform: uppercase; color: #000;
+    }
+    .cf-label em { font-style: normal; font-weight: 400; text-transform: none; color: #aaa; letter-spacing: 0; margin-left: .25em; }
+    .cf-field input[type="text"], .cf-field textarea {
+      display: block; width: 100%; box-sizing: border-box;
+      height: 2.25vw; min-height: 30px; padding: 0 .95vw;
+      border: 1px solid #a8a8a8; border-radius: 4px; background: #fff;
+      font: 400 max(.62vw, 11px) "Montserrat", sans-serif; color: #111;
+      transition: border-color .2s ease, box-shadow .2s ease;
+    }
+    .cf-field textarea { height: 6.8vw; min-height: 90px; padding: .85vw .95vw; resize: vertical; line-height: 1.4; }
+    .cf-field input::placeholder, .cf-field textarea::placeholder { color: #aaa; }
+    .cf-field input:focus, .cf-field textarea:focus { outline: none; border-color: #111; box-shadow: 0 0 0 3px rgba(0,0,0,.08); }
+    .cf-field.bad input, .cf-field.bad textarea { border-color: #d33; }
+    .cf-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.05vw; }
+    .cf-tile { position: relative; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+    .cf-tile input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+    .cf-box {
+      width: 100%; aspect-ratio: 1; border: 1px solid #a8a8a8; border-radius: 2px; background: #fff;
+      display: grid; place-items: center; transition: background .2s ease, border-color .2s ease;
+    }
+    .cf-box::after { content: "✓"; font-size: 1.8vw; font-weight: 700; color: #fff; opacity: 0; transition: opacity .2s ease; }
+    .cf-tile input:checked + .cf-box { background: #111; border-color: #111; }
+    .cf-tile input:checked + .cf-box::after { opacity: 1; }
+    .cf-tile input:focus-visible + .cf-box { box-shadow: 0 0 0 3px rgba(0,0,0,.18); }
+    .cf-tile:hover .cf-box { border-color: #111; }
+    .cf-cap { margin-top: .6vw; font-weight: 700; font-size: max(.56vw, 10px); color: #000; text-align: center; }
+    .cf-send {
+      margin-top: 1.5vw; height: 2.2vw; min-height: 32px; width: 100%;
+      border: 0; border-radius: 0; background: #000; color: #fff; cursor: pointer;
+      font: 700 max(.66vw, 11px) "Montserrat", sans-serif; letter-spacing: .04em; text-transform: uppercase;
+      transition: background .2s ease;
+    }
+    .cf-send:hover, .cf-send:focus-visible { background: #333; outline: none; }
+    .cf-note { min-height: 1em; margin-top: .6vw; font-size: max(.6vw, 11px); color: #555; }
+    .connect-links {
+      position: absolute; left: 51.65vw; top: 40.7vw;
+      list-style: none; margin: 0; padding: 0; display: grid; row-gap: .9vw;
+    }
+    .connect-links a {
+      display: flex; align-items: center; gap: .75vw;
+      color: #111; text-decoration: none; font-size: max(1vw, 12px); letter-spacing: .03em;
+    }
+    .connect-links svg { width: 1.35vw; height: 1.35vw; min-width: 16px; min-height: 16px; color: #555; flex: none; transition: color .2s ease, transform .2s ease; }
+    .connect-links a:hover svg, .connect-links a:focus-visible svg { color: #000; transform: scale(1.1); }
+    .connect-links a:hover span, .connect-links a:focus-visible span { text-decoration: underline; text-underline-offset: 3px; }
+
+    /* phones/tablets: artwork on top, then heading, form and contacts stacked */
+    @media (max-width: 820px) {
+      .connect { padding: 0 52px 40px 20px; }          /* right room so the side menu doesn't cover the fields */
+      .connect-art { width: calc(100% + 72px); max-width: none; margin: 0 -52px 0 -20px; }
+      .cf-tiles { max-width: 300px; }
+      .connect-title, .connect-form, .connect-links { position: static; }
+      .connect-title { font-size: 34px; margin: 10px 0 26px; }
+      .connect-form { width: auto; display: block; }
+      .cf-divider { display: none; }
+      .cf-field { margin-bottom: 18px; }
+      .cf-label { margin-bottom: 7px; }
+      .cf-field input[type="text"] { height: 44px; padding: 0 14px; font-size: 15px; }
+      .cf-field textarea { height: 120px; padding: 12px 14px; font-size: 15px; }
+      .cf-tiles { gap: 12px; }
+      .cf-box::after { font-size: 24px; }
+      .cf-cap { margin-top: 7px; font-size: 12px; }
+      .cf-send { margin-top: 10px; height: 48px; font-size: 13px; }
+      .cf-note { margin-top: 8px; font-size: 13px; }
+      .connect-links { margin-top: 28px; row-gap: 14px; }
+      .connect-links a { gap: 12px; font-size: 16px; }
+      .connect-links svg { width: 22px; height: 22px; }
+    }
 
     /* ---------- IN-SITE PROJECT VIEWER (PDFs open here, not in a new tab) ---------- */
     .viewer {
@@ -604,7 +689,7 @@
       <svg viewBox="0 0 24 24" aria-hidden="true"><g fill="#BF5AF2"><rect x="3" y="3" width="8" height="8" rx="2.2"/><rect x="13" y="3" width="8" height="8" rx="2.2"/><rect x="3" y="13" width="8" height="8" rx="2.2"/><rect x="13" y="13" width="8" height="8" rx="2.2"/></g></svg>
       <span class="label">Projects</span>
     </a>
-    <a href="mailto:aditya2023dhruv@gmail.com?subject=Hello%20Aditya" aria-label="Connect">
+    <a href="#connect" aria-label="Connect">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#40C8E0" d="M4 3h16a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H9.5l-4.3 3.4c-.5.4-1.2 0-1.2-.6V18a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm3.5 6.2a1.3 1.3 0 1 0 0 2.6 1.3 1.3 0 0 0 0-2.6zm4.5 0a1.3 1.3 0 1 0 0 2.6 1.3 1.3 0 0 0 0-2.6zm4.5 0a1.3 1.3 0 1 0 0 2.6 1.3 1.3 0 0 0 0-2.6z" fill-rule="evenodd"/></svg>
       <span class="label">Connect</span>
     </a>
@@ -760,9 +845,54 @@
     </div>
   </section>
 
-  <!-- ================= CONNECT (closing page, the user's own artwork shown as-is) ================= -->
+  <!-- ================= CONNECT (closing page) =================
+       Laid out from the user's 2000-wide "last connect page final" design: the artwork
+       (Connect lettering, magnifier, hand) is one image; heading, form and contacts are real HTML on top. -->
   <section class="connect" id="connect">
-    <img src="assets/connect.jpg?v=3" width="3001" height="1507" loading="lazy" alt="Connect: a hand holding a magnifying glass over a portrait of Aditya">
+    <img class="connect-art" src="assets/connect-bg.jpg" width="2400" height="1276" loading="lazy" alt="Connect: a hand holding a magnifying glass over a portrait of Aditya">
+
+    <h2 class="connect-title">Let’s Work.<span>Together.</span></h2>
+
+    <form class="connect-form" id="connectForm" novalidate>
+      <div class="cf-col">
+        <label class="cf-field"><span class="cf-label">Name</span>
+          <input name="name" type="text" placeholder="First and Last" autocomplete="name" required></label>
+        <label class="cf-field"><span class="cf-label">Company name <em>(optional)</em></span>
+          <input name="company" type="text" placeholder="Company Name" autocomplete="organization"></label>
+        <label class="cf-field"><span class="cf-label">Message</span>
+          <textarea name="message" placeholder="Let’s work together." required></textarea></label>
+      </div>
+      <div class="cf-divider" aria-hidden="true"></div>
+      <div class="cf-col">
+        <label class="cf-field"><span class="cf-label">Budget <em>(optional)</em></span>
+          <input name="budget" type="text" placeholder="Amount" inputmode="text"></label>
+        <fieldset class="cf-field cf-types">
+          <legend class="cf-label">Project type <em>Select all that apply</em></legend>
+          <div class="cf-tiles">
+            <label class="cf-tile"><input type="checkbox" name="type" value="Branding"><span class="cf-box" aria-hidden="true"></span><span class="cf-cap">Branding</span></label>
+            <label class="cf-tile"><input type="checkbox" name="type" value="UI/UX Web"><span class="cf-box" aria-hidden="true"></span><span class="cf-cap">UI/UX Web</span></label>
+            <label class="cf-tile"><input type="checkbox" name="type" value="Other"><span class="cf-box" aria-hidden="true"></span><span class="cf-cap">Other</span></label>
+          </div>
+        </fieldset>
+        <button class="cf-send" type="submit">Send message</button>
+        <p class="cf-note" id="cfNote" role="status"></p>
+      </div>
+    </form>
+
+    <ul class="connect-links">
+      <li><a href="https://www.instagram.com/_adityadhruv_/" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.4" cy="6.6" r="1.3" fill="currentColor"/></svg>
+        <span>_adityadhruv_</span><span class="sr">on Instagram</span></a></li>
+      <li><a href="tel:+919010156088">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6.6 2.8c.6-.3 1.3-.1 1.6.5l1.9 3.6c.3.6.2 1.3-.3 1.7L8.3 9.8c1.1 2.4 3.4 4.7 5.9 5.9l1.2-1.5c.4-.5 1.1-.6 1.7-.3l3.6 1.9c.6.3.8 1 .5 1.6l-1 2.3c-.4.9-1.3 1.4-2.3 1.3C9.6 20.3 3.7 14.4 3 6.1c-.1-1 .4-1.9 1.3-2.3z"/></svg>
+        <span>+91 90101 56088</span></a></li>
+      <li><a href="mailto:aditya2023dhruv@gmail.com?subject=Hello%20Aditya">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="4.5" width="19" height="15" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3.5 6.5l8.5 6.3 8.5-6.3" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+        <span>aditya2023dhruv@gmail.com</span></a></li>
+      <li><a id="linkedinLink" href="https://www.linkedin.com/" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4.5 2.5h15a2 2 0 0 1 2 2v15a2 2 0 0 1-2 2h-15a2 2 0 0 1-2-2v-15a2 2 0 0 1 2-2zm2.2 7.3v8.5h2.7V9.8zm1.35-4.3a1.55 1.55 0 1 0 0 3.1 1.55 1.55 0 0 0 0-3.1zm4.05 4.3v8.5h2.6v-4.5c0-1.2.4-2.1 1.6-2.1s1.4 1 1.4 2.2v4.4h2.6v-5c0-2.5-1.2-3.7-3.2-3.7-1.2 0-2 .6-2.4 1.2V9.8z"/></svg>
+        <span>LinkedIn</span></a></li>
+    </ul>
   </section>
 
   <!-- in-site viewer: any link with data-pdf="file.pdf" opens here -->
@@ -1268,6 +1398,35 @@
     // empty slots shouldn't jump the page to the top when clicked
     document.querySelectorAll('.card.empty, .fcard.empty, [data-soon]').forEach(c =>      // [data-soon] = has a cover, PDF not added yet
       c.addEventListener('click', e => e.preventDefault()));
+
+    // ---------- connect form: the site has no server, so "Send message" opens the visitor's
+    // email app with everything filled in, addressed to Aditya ----------
+    (() => {
+      const form = document.getElementById('connectForm');
+      if (!form) return;
+      const note = document.getElementById('cfNote');
+      const TO = 'aditya2023dhruv@gmail.com';
+      form.addEventListener('input', e => e.target.closest('.cf-field')?.classList.remove('bad'));
+      form.addEventListener('submit', e => {
+        e.preventDefault();
+        const f = form.elements;
+        const name = f.name.value.trim(), msg = f.message.value.trim();
+        let ok = true;
+        [[f.name, name], [f.message, msg]].forEach(([el, v]) => { if (!v) { el.closest('.cf-field').classList.add('bad'); ok = false; } });
+        if (!ok) { note.textContent = 'Please add your name and a message.'; (name ? f.message : f.name).focus(); return; }
+        const types = [...form.querySelectorAll('input[name="type"]:checked')].map(c => c.value);
+        const details = [
+          'Name: ' + name,
+          f.company.value.trim() && 'Company: ' + f.company.value.trim(),
+          f.budget.value.trim() && 'Budget: ' + f.budget.value.trim(),
+          types.length && 'Project type: ' + types.join(', '),
+        ].filter(Boolean);
+        const lines = [msg, '', '—', ...details];
+        const subject = 'Project enquiry from ' + name + (types.length ? ' (' + types.join(', ') + ')' : '');
+        location.href = 'mailto:' + TO + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(lines.join('\n'));
+        note.textContent = 'Opening your email app… if nothing opens, write to ' + TO;
+      });
+    })();
 
     // rows with more cards than fit get ‹ › arrows (desktop)
     document.querySelectorAll('.projects .row').forEach(row => {
